@@ -1,0 +1,52 @@
+*unionbuf.nvim.txt*
+
+==============================================================================
+Lua module: unionbuf                                  *unionbuf.nvim-unionbuf*
+
+open({entries}, {opts})                                      *unionbuf.open()*
+  Open unionbuf buffer.
+
+  Parameters: ~
+    {entries} (UnionbufEntry[]) |UnionbufEntry|
+    {opts} (UnionbufOpenOption?) |UnionbufOpenOption|
+
+==============================================================================
+STRUCTURE                                            *unionbuf.nvim-STRUCTURE*
+
+UnionbufEntry                                                  *UnionbufEntry*
+
+- {start_row} (integer) first line 0-base index
+- {start_col} (integer?) first column 0-base index
+- {end_row} (integer?) last line 0-base index
+- {end_col} (integer?) last column 0-base index
+- {bufnr} (integer?) buffer number
+- {path} (string?) file path
+
+UnionbufOpenOption                                        *UnionbufOpenOption*
+
+- {open} (fun(bufnr:integer)?) open window function using argument buffer number
+
+==============================================================================
+EXAMPLES                                              *unionbuf.nvim-EXAMPLES*
+
+>
+  require("unionbuf").open({
+    {
+      path = "path/to/file",
+      -- or
+      -- bufnr = {buffer number},
+
+      start_row = 0,
+      -- end_row = 0,
+      -- start_col = 0,
+      -- end_col = -1,
+    },
+    -- ...
+  })
+
+  -- Then, edit the buffer and :write
+
+<
+
+==============================================================================
+vim:tw=78:ts=8:ft=help
