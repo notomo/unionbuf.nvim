@@ -38,6 +38,20 @@ function Entry.new(raw_entry)
   }
   local entry = vim.tbl_deep_extend("force", default, raw_entry)
 
+  if entry.start_row > entry.end_row and entry.end_row >= 0 then
+    local start_row = entry.start_row
+    local end_row = entry.end_row
+    entry.start_row = end_row
+    entry.end_row = start_row
+  end
+
+  if entry.start_row == entry.end_row and entry.start_col > entry.end_col and entry.end_col >= 0 then
+    local start_col = entry.start_col
+    local end_col = entry.end_col
+    entry.start_col = end_col
+    entry.end_col = start_col
+  end
+
   if not entry.bufnr then
     local bufnr = vim.fn.bufadd(entry.path)
     vim.fn.bufload(bufnr)

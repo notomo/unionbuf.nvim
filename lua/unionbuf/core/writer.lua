@@ -3,6 +3,7 @@ local vim = vim
 local M = {}
 
 local ns = require("unionbuf.core.entries").ns
+local tracker_ns = vim.api.nvim_create_namespace("unionbuf_tracker")
 
 function M.write(union_bufnr, entry_map)
   local all_extmarks = vim.api.nvim_buf_get_extmarks(union_bufnr, ns, 0, -1, { details = true })
@@ -25,8 +26,17 @@ function M.write(union_bufnr, entry_map)
     table.sort(entry_pairs, function(a, b)
       return a.entry.end_row > b.entry.end_row
     end)
+
     for _, pair in ipairs(entry_pairs) do
-      local changed = M._set_text(union_bufnr, pair.entry, pair.extmark, pair.is_deleted)
+      local entry = pair.entry
+      vim.api.nvim_buf_set_extmark(entry_bufnr, tracker_ns, entry.start_row, entry.start_col, {
+        end_row = entry.end_row,
+        end_col = entry.end_col,
+        right_gravity = false,
+        end_right_gravity = true,
+      })
+
+      local changed = M._set_text(union_bufnr, entry, pair.extmark, pair.is_deleted)
       changed_bufnrs[entry_bufnr] = changed_bufnrs[entry_bufnr] or changed
     end
   end
@@ -44,7 +54,37 @@ function M.write(union_bufnr, entry_map)
   M._write(bufnrs)
   vim.bo[union_bufnr].modified = false
 
-  -- TODO: update entries
+  local new_raw_entries = {}
+  for _, group in ipairs(groups) do
+    local entry_bufnr, entry_pairs = unpack(group)
+    local raw_entries
+    if changed_bufnrs[entry_bufnr] then
+      local tracker_extmarks = vim.api.nvim_buf_get_extmarks(entry_bufnr, tracker_ns, 0, -1, { details = true })
+      raw_entries = vim.tbl_map(function(extmark)
+        return {
+          bufnr = entry_bufnr,
+          start_row = extmark[2],
+          start_col = extmark[3],
+          end_row = extmark[4].end_row,
+          end_col = extmark[4].end_col,
+        }
+      end, tracker_extmarks)
+    else
+      raw_entries = vim.tbl_map(function(entry_pair)
+        local entry = entry_pair.entry
+        return {
+          bufnr = entry_bufnr,
+          start_row = entry.start_row,
+          start_col = entry.start_col,
+          end_row = entry.end_row,
+          end_col = entry.end_col,
+        }
+      end, entry_pairs)
+    end
+    vim.list_extend(new_raw_entries, raw_entries)
+    vim.api.nvim_buf_clear_namespace(entry_bufnr, tracker_ns, 0, -1)
+  end
+  return new_raw_entries
 end
 
 function M._set_text(union_bufnr, entry, extmark, is_deleted)

@@ -20,7 +20,8 @@ function M.open(raw_entries, raw_opts)
   vim.api.nvim_create_autocmd({ "BufWriteCmd" }, {
     buffer = bufnr,
     callback = function()
-      require("unionbuf.core.writer").write(bufnr, entry_map)
+      raw_entries = require("unionbuf.core.writer").write(bufnr, entry_map)
+      entry_map = require("unionbuf.core.reader").read(bufnr, raw_entries)
     end,
   })
 

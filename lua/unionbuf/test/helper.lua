@@ -21,4 +21,18 @@ local asserts = require("vusted.assert").asserts
 local asserters = require(plugin_name .. ".vendor.assertlib").list()
 require(plugin_name .. ".vendor.misclib.test.assert").register(asserts.create, asserters)
 
+asserts.create("lines_after"):register(function(self)
+  return function(_, args)
+    local before = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
+    args[1]()
+    local after = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
+
+    local diff = vim.diff(after, before, {})
+    self:set_positive(("diff exists: before(+), after(-)\n%s"):format(diff))
+    self:set_negative("diff does not exists")
+
+    return vim.deep_equal(before, after)
+  end
+end)
+
 return helper
