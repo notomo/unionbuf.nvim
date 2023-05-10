@@ -79,17 +79,10 @@ function M._set_text(union_bufnr, entry, extmark, is_deleted)
     return false
   end
 
-  -- workaround: nvim_buf_set_text raise out of range error
-  local old_end_col = entry.end_col
-  if old_end_col == -1 then
-    local old_last_line = entry.lines[#entry.lines]
-    old_end_col = entry.start_col + #old_last_line
-  end
-
   if entry.is_lines and is_deleted then
     vim.api.nvim_buf_set_lines(entry.bufnr, entry.start_row, entry.end_row + 1, false, {})
   else
-    vim.api.nvim_buf_set_text(entry.bufnr, entry.start_row, entry.start_col, entry.end_row, old_end_col, lines)
+    vim.api.nvim_buf_set_text(entry.bufnr, entry.start_row, entry.start_col, entry.end_row, entry.end_col, lines)
   end
 
   return true

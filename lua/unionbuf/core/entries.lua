@@ -47,6 +47,11 @@ function Entry.new(raw_entry)
   entry.lines = get_lines(entry)
   entry.is_lines = is_lines(entry)
 
+  if entry.end_col == -1 then
+    local last_line = entry.lines[#entry.lines]
+    entry.end_col = entry.start_col + #last_line
+  end
+
   return setmetatable(entry, Entry)
 end
 
