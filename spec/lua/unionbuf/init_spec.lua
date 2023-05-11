@@ -531,4 +531,36 @@ edited_2
 test3
 $]])
   end)
+
+  it("notifies warning if original buffer has already changed on write", function()
+    local bufnr1 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(
+      bufnr1,
+      [[
+test1
+]]
+    )
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+      },
+    }
+    unionbuf.open(entries)
+
+    vim.api.nvim_buf_set_text(bufnr1, 0, 0, 0, 1, { " " })
+
+    local notified_msg
+    local notified_level
+    vim.notify = function(msg, level)
+      notified_msg = msg
+      notified_level = level
+    end
+
+    vim.cmd.write()
+
+    assert.matches("already changed", notified_msg)
+    assert.equals(vim.log.levels.WARN, notified_level)
+  end)
 end)

@@ -95,11 +95,11 @@ end
 
 function M._set_text(union_bufnr, entry, extmark, is_deleted)
   if entry:is_already_changed() then
-    local msg = ("[unionbuf] Original buffer(bufnr=%d, start_row=%d) is already changed."):format(
+    local msg = ("[unionbuf] Original buffer(bufnr=%d, start_row=%d) has already changed."):format(
       entry.bufnr,
       entry.start_row
     )
-    vim.api.nvim_echo({ { msg, "WarningMsg" } }, true, {})
+    vim.notify(msg, vim.log.levels.WARN)
     return false
   end
 

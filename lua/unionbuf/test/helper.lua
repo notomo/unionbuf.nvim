@@ -3,8 +3,10 @@ local plugin_name = helper.get_module_root(...)
 
 helper.root = helper.find_plugin_root(plugin_name)
 
+local notify = vim.notify
 function helper.before_each()
   helper.test_data = require("unionbuf.vendor.misclib.test.data_dir").setup(helper.root)
+  vim.notify = notify
 end
 
 function helper.after_each()
