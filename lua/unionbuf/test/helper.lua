@@ -28,7 +28,12 @@ asserts.create("lines_after"):register(function(self)
     local after = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
 
     local diff = vim.diff(after, before, {})
-    self:set_positive(("diff exists: before(+), after(-)\n%s"):format(diff))
+    self:set_positive(([[diff exists: before(+), after(-)
+%s
+Before lines:
+%s
+After lines:
+%s]]):format(diff, before, after))
     self:set_negative("diff does not exists")
 
     return vim.deep_equal(before, after)

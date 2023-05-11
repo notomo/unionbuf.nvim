@@ -484,4 +484,51 @@ test3
 test3
 $]])
   end)
+
+  it("can write multiple times", function()
+    local bufnr1 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(
+      bufnr1,
+      [[
+test1
+test2
+test3
+]]
+    )
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 1,
+      },
+    }
+    unionbuf.open(entries)
+    local union_bufnr = vim.api.nvim_get_current_buf()
+
+    vim.fn.setline(1, "edited_1")
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
+
+    vim.cmd.tabedit()
+    vim.cmd.buffer(bufnr1)
+    assert.exists_pattern([[
+^test1
+edited_1
+test3
+$]])
+
+    vim.cmd.buffer(union_bufnr)
+    vim.fn.setline(1, "edited_2")
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
+
+    vim.cmd.buffer(bufnr1)
+    assert.exists_pattern([[
+^test1
+edited_2
+test3
+$]])
+  end)
 end)
