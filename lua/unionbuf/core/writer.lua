@@ -29,15 +29,21 @@ function M.write(union_bufnr, entry_map)
 
     for _, pair in ipairs(entry_pairs) do
       local entry = pair.entry
-      vim.api.nvim_buf_set_extmark(entry_bufnr, tracker_ns, entry.start_row, entry.start_col, {
-        end_row = entry.end_row,
-        end_col = entry.end_col,
-        right_gravity = false,
-        end_right_gravity = true,
-      })
+      if not pair.is_deleted then
+        vim.api.nvim_buf_set_extmark(entry_bufnr, tracker_ns, entry.start_row, entry.start_col, {
+          end_row = entry.end_row,
+          end_col = entry.end_col,
+          right_gravity = false,
+          end_right_gravity = true,
+        })
+      end
 
       local changed = M._set_text(union_bufnr, entry, pair.extmark, pair.is_deleted)
       changed_bufnrs[entry_bufnr] = changed_bufnrs[entry_bufnr] or changed
+
+      if pair.is_deleted then
+        vim.api.nvim_buf_del_extmark(union_bufnr, ns, pair.extmark[1])
+      end
     end
   end
 

@@ -300,11 +300,9 @@ test4
 
     vim.cmd("%delete")
 
-    -- TODO
-    -- assert.lines_after(function()
-    --   vim.cmd.write()
-    -- end)
-    vim.cmd.write()
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
@@ -403,11 +401,9 @@ test4
     vim.api.nvim_buf_set_lines(0, 0, 1, false, { "test2_1", "test2_2" })
     vim.api.nvim_buf_set_lines(0, 2, 3, false, { "test3_1", "test3_2" })
 
-    -- TODO
-    -- assert.lines_after(function()
-    --   vim.cmd.write()
-    -- end)
-    vim.cmd.write()
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
