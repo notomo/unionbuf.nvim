@@ -170,7 +170,7 @@ test1
     assert.is_false(vim.bo[bufnr1].modified)
   end)
 
-  it("can edit multiple entries", function()
+  it("can edit multiple buffer entries", function()
     local bufnr1 = vim.api.nvim_create_buf(false, true)
     helper.set_lines(
       bufnr1,
@@ -216,12 +216,49 @@ test2
     assert.is_false(vim.bo[bufnr2].modified)
   end)
 
-  it("ignores unmodified entries", function()
+  it("can edit multiple entries in one buffer", function()
     local bufnr1 = vim.api.nvim_create_buf(false, true)
     helper.set_lines(
       bufnr1,
       [[
 test1
+test2
+]]
+    )
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+      },
+      {
+        bufnr = bufnr1,
+        start_row = 1,
+      },
+    }
+    unionbuf.open(entries)
+
+    vim.fn.setline(1, "edited_1")
+    vim.fn.setline(2, "edited_2")
+
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
+
+    vim.cmd.buffer(bufnr1)
+    assert.exists_pattern([[
+^edited_1
+edited_2
+$]])
+  end)
+
+  it("ignores unmodified entries", function()
+    local bufnr1 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(
+      bufnr1,
+      [[
+test1_1
+test1_2
 ]]
     )
     local modified1 = false
@@ -272,6 +309,33 @@ test2
     assert.exists_pattern("^test2$")
     assert.is_false(modified2)
     assert.is_false(vim.bo[bufnr2].modified)
+  end)
+
+  it("does not change buffer if there is no changed entries on write", function()
+    local bufnr1 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(
+      bufnr1,
+      [[
+test1
+test2
+]]
+    )
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+      },
+      {
+        bufnr = bufnr1,
+        start_row = 1,
+      },
+    }
+    unionbuf.open(entries)
+
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
   end)
 
   it("can delete entries", function()

@@ -23,11 +23,12 @@ function M.write(union_bufnr, entry_map)
   local changed_bufnrs = {}
   for _, group in ipairs(groups) do
     local entry_bufnr, entry_pairs = unpack(group)
-    table.sort(entry_pairs, function(a, b)
+
+    local reversed_pairs = vim.deepcopy(entry_pairs)
+    table.sort(reversed_pairs, function(a, b)
       return a.entry.end_row > b.entry.end_row
     end)
-
-    for _, pair in ipairs(entry_pairs) do
+    for _, pair in ipairs(reversed_pairs) do
       local entry = pair.entry
       if not pair.is_deleted then
         vim.api.nvim_buf_set_extmark(entry_bufnr, tracker_ns, entry.start_row, entry.start_col, {
