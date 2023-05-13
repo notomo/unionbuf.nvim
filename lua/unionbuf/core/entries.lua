@@ -15,62 +15,55 @@ function M.new(raw_entries)
   end, raw_entries)
 end
 
-local get_lines = function(entry)
-  return vim.api.nvim_buf_get_text(entry.bufnr, entry.start_row, entry.start_col, entry.end_row, entry.end_col, {})
-end
-
-local is_lines = function(entry)
-  if entry.start_col ~= 0 then
+local is_lines = function(bufnr, row, start_col, end_col)
+  if start_col ~= 0 then
     return false
   end
-  if entry.end_col == -1 then
+  if end_col == -1 then
     return true
   end
-  local last_line = vim.api.nvim_buf_get_lines(entry.bufnr, entry.end_row, entry.end_row + 1, false)[1]
-  return entry.end_col == #last_line
+  local last_line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
+  return end_col == #last_line
 end
 
 function Entry.new(raw_entry)
-  local default = {
-    end_row = raw_entry.start_row,
-    start_col = 0,
-    end_col = -1,
-  }
-  local entry = vim.tbl_deep_extend("force", default, raw_entry)
-
-  if entry.start_row > entry.end_row and entry.end_row >= 0 then
-    local start_row = entry.start_row
-    local end_row = entry.end_row
-    entry.start_row = end_row
-    entry.end_row = start_row
-  end
-
-  if entry.start_row == entry.end_row and entry.start_col > entry.end_col and entry.end_col >= 0 then
-    local start_col = entry.start_col
-    local end_col = entry.end_col
-    entry.start_col = end_col
-    entry.end_col = start_col
-  end
-
-  if not entry.bufnr then
-    local bufnr = vim.fn.bufadd(entry.path)
+  local bufnr = raw_entry.bufnr
+  if not bufnr then
+    bufnr = vim.fn.bufadd(raw_entry.path)
     vim.fn.bufload(bufnr)
-    entry.bufnr = bufnr
   end
 
-  entry.lines = get_lines(entry)
-  entry.is_lines = is_lines(entry)
-
-  if entry.end_col == -1 then
-    local last_line = entry.lines[#entry.lines]
-    entry.end_col = entry.start_col + #last_line
+  local start_row = raw_entry.start_row
+  local end_row = raw_entry.end_row or raw_entry.start_row
+  if start_row > end_row and end_row >= 0 then
+    start_row, end_row = end_row, start_row
   end
 
+  local start_col = raw_entry.start_col or 0
+  local end_col = raw_entry.end_col or -1
+  local lines = vim.api.nvim_buf_get_text(bufnr, start_row, start_col, end_row, end_col, {})
+  if start_row == end_row and start_col > end_col and end_col >= 0 then
+    start_col, end_col = end_col, start_col
+  end
+  if end_col == -1 then
+    local last_line = lines[#lines]
+    end_col = start_col + #last_line
+  end
+
+  local entry = {
+    bufnr = bufnr,
+    start_row = start_row,
+    end_row = end_row,
+    start_col = start_col,
+    end_col = end_col,
+    lines = lines,
+    is_lines = is_lines(bufnr, end_row, start_col, end_col),
+  }
   return setmetatable(entry, Entry)
 end
 
 function Entry.is_already_changed(self)
-  local lines = get_lines(self)
+  local lines = vim.api.nvim_buf_get_text(self.bufnr, self.start_row, self.start_col, self.end_row, self.end_col, {})
   return not vim.deep_equal(lines, self.lines)
 end
 
