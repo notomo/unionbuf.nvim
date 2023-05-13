@@ -627,4 +627,29 @@ test1
     assert.matches("already changed", notified_msg)
     assert.equals(vim.log.levels.WARN, notified_level)
   end)
+
+  it("cannot undo right after open", function()
+    local bufnr1 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(
+      bufnr1,
+      [[
+test1
+]]
+    )
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+      },
+    }
+    unionbuf.open(entries)
+
+    vim.cmd.undo({ mods = { silent = true } })
+
+    vim.cmd.buffer(bufnr1)
+    assert.exists_pattern([[
+^test1
+$]])
+  end)
 end)

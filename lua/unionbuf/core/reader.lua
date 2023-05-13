@@ -48,6 +48,9 @@ function M.read(union_bufnr, raw_entries)
 
   -- TODO: keep border newline if not deleted entry
 
+  -- Current limitation: This disturbs undo after writing. Because it may break extmark position.
+  require("unionbuf.lib.undo").clear(union_bufnr)
+
   return entry_map
 end
 
