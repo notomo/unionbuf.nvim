@@ -24,7 +24,7 @@ function M.write(union_bufnr, entry_map)
   for _, group in ipairs(groups) do
     local entry_bufnr, entry_pairs = unpack(group)
 
-    local reversed_pairs = vim.deepcopy(entry_pairs)
+    local reversed_pairs = vim.iter(entry_pairs):totable()
     table.sort(reversed_pairs, function(a, b)
       return a.entry.end_row > b.entry.end_row
     end)
@@ -48,7 +48,7 @@ function M.write(union_bufnr, entry_map)
     end
   end
 
-  local bufnrs = vim
+  vim
     .iter(groups)
     :map(function(group)
       local entry_bufnr = group[1]
@@ -57,8 +57,11 @@ function M.write(union_bufnr, entry_map)
       end
       return entry_bufnr
     end)
-    :totable()
-  M._write(bufnrs)
+    :each(function(bufnr)
+      vim.api.nvim_buf_call(bufnr, function()
+        vim.cmd.update()
+      end)
+    end)
   vim.bo[union_bufnr].modified = false
 
   local new_raw_entries = {}
@@ -78,14 +81,7 @@ function M.write(union_bufnr, entry_map)
       end, tracker_extmarks)
     else
       raw_entries = vim.tbl_map(function(entry_pair)
-        local entry = entry_pair.entry
-        return {
-          bufnr = entry_bufnr,
-          start_row = entry.start_row,
-          start_col = entry.start_col,
-          end_row = entry.end_row,
-          end_col = entry.end_col,
-        }
+        return entry_pair.entry
       end, entry_pairs)
     end
     vim.list_extend(new_raw_entries, raw_entries)
@@ -133,14 +129,6 @@ function M._set_text(union_bufnr, entry, extmark, is_deleted)
   end
 
   return true
-end
-
-function M._write(bufnrs)
-  for _, bufnr in ipairs(bufnrs) do
-    vim.api.nvim_buf_call(bufnr, function()
-      vim.cmd.update()
-    end)
-  end
 end
 
 return M

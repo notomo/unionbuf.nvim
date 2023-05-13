@@ -17,12 +17,15 @@ function M.read(union_bufnr, raw_entries)
   vim.api.nvim_buf_set_lines(union_bufnr, 0, -1, false, all_lines)
   vim.bo[union_bufnr].modified = false
 
+  -- Current limitation: This disturbs undo after writing. Because it may break extmark position.
+  require("unionbuf.lib.undo").clear(union_bufnr)
+
   local row = 0
   local entry_map = {}
   for _, entry in ipairs(entries) do
-    local lines = entry.lines
-    local end_col = #lines[#lines]
-    local end_row = row + #lines - 1
+    local line_count = #entry.lines
+    local end_col = #entry.lines[line_count]
+    local end_row = row + line_count - 1
 
     local extmark_id = vim.api.nvim_buf_set_extmark(union_bufnr, ns, row, 0, {
       end_col = end_col,
@@ -46,9 +49,6 @@ function M.read(union_bufnr, raw_entries)
 
   -- TODO: keep border newline if not deleted entry
 
-  -- Current limitation: This disturbs undo after writing. Because it may break extmark position.
-  require("unionbuf.lib.undo").clear(union_bufnr)
-
   return entry_map
 end
 
@@ -71,8 +71,12 @@ vim.api.nvim_set_decoration_provider(highlight_ns, {
     )
     local count = 1
     local deleted_map = Entries.deleted_map(bufnr, all_extmarks)
-    for _, extmark in ipairs(all_extmarks) do
-      if not deleted_map[extmark[1]] then
+    vim
+      .iter(all_extmarks)
+      :filter(function(extmark)
+        return not deleted_map[extmark[1]]
+      end)
+      :each(function(extmark)
         vim.api.nvim_buf_set_extmark(bufnr, ns, extmark[2], extmark[3], {
           end_col = extmark[4].end_col,
           end_row = extmark[4].end_row,
@@ -81,8 +85,7 @@ vim.api.nvim_set_decoration_provider(highlight_ns, {
           ephemeral = true,
         })
         count = count + 1
-      end
-    end
+      end)
   end,
 })
 
