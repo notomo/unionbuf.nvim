@@ -7,7 +7,7 @@ local tracker_ns = vim.api.nvim_create_namespace("unionbuf_tracker")
 
 function M.write(union_bufnr, entry_map)
   local all_extmarks = vim.api.nvim_buf_get_extmarks(union_bufnr, ns, 0, -1, { details = true })
-  local deleted_map = M._deleted_map(union_bufnr, all_extmarks)
+  local deleted_map = require("unionbuf.core.entries").deleted_map(union_bufnr, all_extmarks)
   local all_entry_pairs = vim.tbl_map(function(extmark)
     local extmark_id = extmark[1]
     return {
@@ -141,41 +141,6 @@ function M._write(bufnrs)
       vim.cmd.update()
     end)
   end
-end
-
-function M._deleted_map(union_bufnr, all_extmarks)
-  local extmarks = vim.deepcopy(all_extmarks)
-  local detector_mark = vim.api.nvim_buf_get_extmarks(
-    union_bufnr,
-    require("unionbuf.core.entries").deletion_detector_ns,
-    0,
-    -1,
-    { details = true }
-  )[1]
-  table.insert(extmarks, detector_mark)
-
-  local is_deleted = function(i, extmark)
-    local start_col = extmark[3]
-    local end_col = extmark[4].end_col
-    if start_col ~= end_col then
-      return false
-    end
-
-    local neighborhood = extmarks[i + 1] or extmarks[i - 1]
-    if not neighborhood then
-      return false
-    end
-
-    local start_row = extmark[2]
-    local end_row = extmark[4].end_row
-    return start_row == neighborhood[2] and end_row == neighborhood[4].end_row and start_col == neighborhood[3]
-  end
-
-  local deleted_map = {}
-  for i, extmark in ipairs(all_extmarks) do
-    deleted_map[extmark[1]] = is_deleted(i, extmark)
-  end
-  return deleted_map
 end
 
 return M
