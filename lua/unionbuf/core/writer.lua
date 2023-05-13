@@ -122,7 +122,7 @@ function M._set_text(union_bufnr, entry, extmark, is_deleted)
     return false
   end
 
-  if entry.is_lines and is_deleted then
+  if is_deleted and entry:is_lines() then
     vim.api.nvim_buf_set_lines(entry.bufnr, entry.start_row, entry.end_row + 1, false, {})
   else
     vim.api.nvim_buf_set_text(entry.bufnr, entry.start_row, entry.start_col, entry.end_row, entry.end_col, lines)

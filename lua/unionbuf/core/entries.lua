@@ -15,17 +15,6 @@ function M.new(raw_entries)
   end, raw_entries)
 end
 
-local is_lines = function(bufnr, row, start_col, end_col)
-  if start_col ~= 0 then
-    return false
-  end
-  if end_col == -1 then
-    return true
-  end
-  local last_line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
-  return end_col == #last_line
-end
-
 function Entry.new(raw_entry)
   local bufnr = raw_entry.bufnr
   if not bufnr then
@@ -45,6 +34,8 @@ function Entry.new(raw_entry)
   if start_row == end_row and start_col > end_col and end_col >= 0 then
     start_col, end_col = end_col, start_col
   end
+
+  local original_end_col = end_col
   if end_col == -1 then
     local last_line = lines[#lines]
     end_col = start_col + #last_line
@@ -56,8 +47,8 @@ function Entry.new(raw_entry)
     end_row = end_row,
     start_col = start_col,
     end_col = end_col,
+    _original_end_col = original_end_col,
     lines = lines,
-    is_lines = is_lines(bufnr, end_row, start_col, end_col),
   }
   return setmetatable(entry, Entry)
 end
@@ -65,6 +56,17 @@ end
 function Entry.is_already_changed(self)
   local lines = vim.api.nvim_buf_get_text(self.bufnr, self.start_row, self.start_col, self.end_row, self.end_col, {})
   return not vim.deep_equal(lines, self.lines)
+end
+
+function Entry.is_lines(self)
+  if self.start_col ~= 0 then
+    return false
+  end
+  if self._original_end_col == -1 then
+    return true
+  end
+  local last_line = vim.api.nvim_buf_get_lines(self.bufnr, self.end_row, self.end_row + 1, false)[1]
+  return self.end_col == #last_line
 end
 
 function M.deleted_map(union_bufnr, all_extmarks)
