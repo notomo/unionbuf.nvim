@@ -113,6 +113,40 @@ test2
     assert.exists_pattern([[
 ^test1$]])
   end)
+
+  it("raises error if buffer is invalid", function()
+    local ok, err = pcall(unionbuf.open, {
+      {
+        bufnr = 8888,
+      },
+    })
+    assert.is_false(ok)
+    assert.match("the buffer is invalid", err)
+  end)
+
+  it("raises error if row positions are out of range", function()
+    local bufnr1 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(
+      bufnr1,
+      [[
+test]]
+    )
+
+    local ok, err = pcall(unionbuf.open, {
+      {
+        bufnr = bufnr1,
+        start_row = 1,
+      },
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+        end_row = 1,
+      },
+    })
+    assert.is_false(ok)
+    assert.match("start_row = %d is out of range", err)
+    assert.match("end_row = %d is out of range", err)
+  end)
 end)
 
 describe("unionbuf buffer", function()

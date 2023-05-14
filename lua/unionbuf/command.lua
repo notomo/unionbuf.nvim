@@ -9,11 +9,20 @@ function M.open(raw_entries, raw_opts)
   vim.bo[bufnr].buftype = "acwrite"
   vim.api.nvim_buf_set_name(bufnr, "unionbuf://" .. tostring(bufnr))
 
-  local entry_map = require("unionbuf.core.reader").read(bufnr, raw_entries)
+  local entries, err = require("unionbuf.core.entries").new(raw_entries)
+  if err then
+    error(err)
+  end
+  local entry_map = require("unionbuf.core.reader").read(bufnr, entries)
+
   vim.api.nvim_create_autocmd({ "BufReadCmd" }, {
     buffer = bufnr,
     callback = function()
-      entry_map = require("unionbuf.core.reader").read(bufnr, raw_entries)
+      local new_entries, warn = require("unionbuf.core.entries").new(raw_entries)
+      if warn then
+        vim.notify(warn, vim.log.levels.WARN)
+      end
+      entry_map = require("unionbuf.core.reader").read(bufnr, new_entries)
     end,
   })
 
@@ -21,7 +30,11 @@ function M.open(raw_entries, raw_opts)
     buffer = bufnr,
     callback = function()
       raw_entries = require("unionbuf.core.writer").write(bufnr, entry_map)
-      entry_map = require("unionbuf.core.reader").read(bufnr, raw_entries)
+      local new_entries, warn = require("unionbuf.core.entries").new(raw_entries)
+      if warn then
+        vim.notify(warn, vim.log.levels.WARN)
+      end
+      entry_map = require("unionbuf.core.reader").read(bufnr, new_entries)
     end,
   })
 

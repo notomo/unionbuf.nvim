@@ -6,9 +6,7 @@ local M = {}
 
 local ns = Entries.ns
 
-function M.read(union_bufnr, raw_entries)
-  local entries = Entries.new(raw_entries)
-
+function M.read(union_bufnr, entries)
   local all_lines = {}
   for _, entry in ipairs(entries) do
     vim.list_extend(all_lines, entry.lines)

@@ -10,9 +10,20 @@ Entry.__index = Entry
 
 function M.new(raw_entries)
   -- TODO: merge intersected entries
-  return vim.tbl_map(function(raw_entry)
-    return Entry.new(raw_entry)
-  end, raw_entries)
+  local entries = {}
+  local errs = {}
+  for _, raw_entry in ipairs(raw_entries) do
+    local entry, err = Entry.new(raw_entry)
+    if err then
+      table.insert(errs, err)
+    else
+      table.insert(entries, entry)
+    end
+  end
+  if #errs > 0 then
+    return entries, "[unionbuf] Invalid entries: \n" .. table.concat(errs, "\n")
+  end
+  return entries, nil
 end
 
 function Entry.new(raw_entry)
@@ -21,11 +32,22 @@ function Entry.new(raw_entry)
     bufnr = vim.fn.bufadd(raw_entry.path)
     vim.fn.bufload(bufnr)
   end
+  if not vim.api.nvim_buf_is_valid(bufnr) then
+    return nil, ("- Buffer=%d : the buffer is invalid"):format(bufnr)
+  end
 
   local start_row = raw_entry.start_row
   local end_row = raw_entry.end_row or raw_entry.start_row
   if start_row > end_row and end_row >= 0 then
     start_row, end_row = end_row, start_row
+  end
+
+  local max_row = vim.api.nvim_buf_line_count(bufnr) - 1
+  if start_row > max_row then
+    return nil, ("- Buffer=%d : start_row = %d is out of range. (max_row = %d)"):format(bufnr, start_row, max_row)
+  end
+  if end_row > max_row then
+    return nil, ("- Buffer=%d : end_row = %d is out of range. (max_row = %d)"):format(bufnr, end_row, max_row)
   end
 
   local start_col = raw_entry.start_col or 0
@@ -41,7 +63,7 @@ function Entry.new(raw_entry)
     end_col = start_col + #last_line
   end
 
-  local entry = {
+  local tbl = {
     bufnr = bufnr,
     start_row = start_row,
     end_row = end_row,
@@ -50,7 +72,7 @@ function Entry.new(raw_entry)
     _original_end_col = original_end_col,
     lines = lines,
   }
-  return setmetatable(entry, Entry)
+  return setmetatable(tbl, Entry)
 end
 
 function Entry.is_already_changed(self)
