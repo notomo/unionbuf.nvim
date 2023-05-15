@@ -9,7 +9,6 @@ local Entry = {}
 Entry.__index = Entry
 
 function M.new(raw_entries)
-  -- TODO: merge intersected entries
   local entries = {}
   local errs = {}
   for _, raw_entry in ipairs(raw_entries) do
@@ -23,7 +22,21 @@ function M.new(raw_entries)
   if #errs > 0 then
     return entries, "[unionbuf] Invalid entries: \n" .. table.concat(errs, "\n")
   end
-  return entries, nil
+
+  local sorted = {}
+  local groups = require("unionbuf.vendor.misclib.collection.list").group_by(entries, function(entry)
+    return entry.bufnr
+  end)
+  for _, group in ipairs(groups) do
+    local _, buffer_entries = unpack(group)
+    table.sort(buffer_entries, function(a, b)
+      return a.start_row < b.start_row
+    end)
+    -- TODO: merge intersected entries
+    vim.list_extend(sorted, buffer_entries)
+  end
+
+  return sorted, nil
 end
 
 function Entry.new(raw_entry)

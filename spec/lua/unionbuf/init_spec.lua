@@ -93,6 +93,53 @@ st5$]])
     unionbuf.open({})
   end)
 
+  it("groups by buffer and sorts by row", function()
+    local bufnr1 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(
+      bufnr1,
+      [[
+test1_1
+test1_2
+]]
+    )
+
+    local bufnr2 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(
+      bufnr2,
+      [[
+test2_1
+test2_2
+]]
+    )
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 1,
+      },
+      {
+        bufnr = bufnr2,
+        start_row = 1,
+      },
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+      },
+      {
+        bufnr = bufnr2,
+        start_row = 0,
+      },
+    }
+    unionbuf.open(entries)
+
+    assert.exists_pattern([[
+^test1_1
+test1_2
+test2_1
+test2_2
+$]])
+  end)
+
   it("can use path instead of bufnr", function()
     local path = helper.test_data:create_file(
       "test.txt",
