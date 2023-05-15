@@ -26,6 +26,9 @@ function M.write(union_bufnr, entry_map)
 
     local reversed_pairs = vim.iter(entry_pairs):totable()
     table.sort(reversed_pairs, function(a, b)
+      if a.entry.end_row == b.entry.end_row then
+        return a.entry.end_col > b.entry.end_col
+      end
       return a.entry.end_row > b.entry.end_row
     end)
     for _, pair in ipairs(reversed_pairs) do

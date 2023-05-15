@@ -9,6 +9,30 @@ local Entry = {}
 Entry.__index = Entry
 
 function M.new(raw_entries)
+  local entries, err = M._new(raw_entries)
+  if err then
+    return entries, err
+  end
+
+  local sorted = {}
+  local groups = require("unionbuf.vendor.misclib.collection.list").group_by(entries, function(entry)
+    return entry.bufnr
+  end)
+  for _, group in ipairs(groups) do
+    local _, buffer_entries = unpack(group)
+    table.sort(buffer_entries, function(a, b)
+      if a.start_row == b.start_row then
+        return a.end_col < b.end_col
+      end
+      return a.start_row < b.start_row
+    end)
+    vim.list_extend(sorted, M._merge(buffer_entries))
+  end
+
+  return sorted, nil
+end
+
+function M._new(raw_entries)
   local entries = {}
   local errs = {}
   for _, raw_entry in ipairs(raw_entries) do
@@ -22,21 +46,44 @@ function M.new(raw_entries)
   if #errs > 0 then
     return entries, "[unionbuf] Invalid entries: \n" .. table.concat(errs, "\n")
   end
+  return entries, nil
+end
 
-  local sorted = {}
-  local groups = require("unionbuf.vendor.misclib.collection.list").group_by(entries, function(entry)
-    return entry.bufnr
-  end)
-  for _, group in ipairs(groups) do
-    local _, buffer_entries = unpack(group)
-    table.sort(buffer_entries, function(a, b)
-      return a.start_row < b.start_row
-    end)
-    -- TODO: merge intersected entries
-    vim.list_extend(sorted, buffer_entries)
+function M._merge(entries)
+  local raw_entries = { entries[1] }
+  local index = 1
+  for entry in vim.iter(entries):skip(1) do
+    local last = raw_entries[index]
+    local merged = M._merge_one(last, entry)
+    if merged then
+      raw_entries[index] = merged
+    else
+      table.insert(raw_entries, entry)
+      index = index + 1
+    end
   end
 
-  return sorted, nil
+  local new_entries, err = M._new(raw_entries)
+  if err then
+    error(err)
+  end
+  return new_entries
+end
+
+function M._merge_one(entry, next_entry)
+  if entry.end_row < next_entry.start_row then
+    return nil
+  end
+  if entry.end_row == next_entry.start_row and entry.end_col < next_entry.start_col then
+    return nil
+  end
+  return {
+    bufnr = entry.bufnr,
+    start_row = entry.start_row,
+    start_col = entry.start_col,
+    end_row = next_entry.end_row,
+    end_col = next_entry.end_col,
+  }
 end
 
 function Entry.new(raw_entry)

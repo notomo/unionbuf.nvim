@@ -140,6 +140,65 @@ test2_2
 $]])
   end)
 
+  it("merges intersected entries", function()
+    local bufnr1 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(
+      bufnr1,
+      [[
+test1_1
+test1_2
+test1_3
+test1_4
+test1_5
+]]
+    )
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+      },
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+        end_row = 1,
+      },
+
+      {
+        bufnr = bufnr1,
+        start_row = 2,
+        end_col = 3,
+      },
+      {
+        bufnr = bufnr1,
+        start_row = 2,
+        start_col = 3,
+      },
+
+      {
+        bufnr = bufnr1,
+        start_row = 3,
+        end_row = 4,
+        end_col = 3,
+      },
+      {
+        bufnr = bufnr1,
+        start_row = 4,
+        start_col = 2,
+        end_col = 4,
+      },
+    }
+    unionbuf.open(entries)
+
+    assert.exists_pattern([[
+^test1_1
+test1_2
+test1_3
+test1_4
+test
+$]])
+  end)
+
   it("can use path instead of bufnr", function()
     local path = helper.test_data:create_file(
       "test.txt",
