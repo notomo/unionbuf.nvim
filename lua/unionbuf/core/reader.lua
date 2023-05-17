@@ -7,16 +7,18 @@ local M = {}
 local ns = Entries.ns
 
 function M.read(union_bufnr, entries)
-  local all_lines = {}
-  for _, entry in ipairs(entries) do
-    vim.list_extend(all_lines, entry.lines)
-  end
   vim.api.nvim_buf_clear_namespace(union_bufnr, ns, 0, -1)
-  vim.api.nvim_buf_set_lines(union_bufnr, 0, -1, false, all_lines)
-  vim.bo[union_bufnr].modified = false
 
-  -- Current limitation: This disturbs undo after writing. Because it may break extmark position.
-  require("unionbuf.lib.undo").clear(union_bufnr)
+  local all_lines = vim.iter(entries):fold({}, function(t, entry)
+    vim.list_extend(t, entry.lines)
+    return t
+  end)
+  local current_lines = vim.api.nvim_buf_get_lines(union_bufnr, 0, -1, false)
+  if not vim.deep_equal(all_lines, current_lines) then
+    vim.api.nvim_buf_set_lines(union_bufnr, 0, -1, false, all_lines)
+    vim.bo[union_bufnr].modified = false
+    require("unionbuf.lib.undo").clear(union_bufnr)
+  end
 
   local row = 0
   local entry_map = {}

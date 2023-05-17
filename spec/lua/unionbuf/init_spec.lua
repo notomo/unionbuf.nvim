@@ -787,6 +787,39 @@ test1
 
     vim.cmd.undo({ mods = { silent = true } })
 
+    assert.exists_pattern([[
+^test1$]])
+  end)
+
+  it("can undo after write", function()
+    local bufnr1 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(
+      bufnr1,
+      [[
+test1
+]]
+    )
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+      },
+    }
+    unionbuf.open(entries)
+
+    vim.fn.setline(1, "edited_1")
+
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
+
+    vim.cmd.undo({ mods = { silent = true } })
+
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
+
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
 ^test1
