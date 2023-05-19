@@ -50,16 +50,16 @@ vim.api.nvim_set_decoration_provider(highlight_ns, {
       return false
     end
     local count = 1
-    local ranges = require("unionbuf.core.extmark").ranges(bufnr, topline, botline_guess)
+    local extmark_ranges = require("unionbuf.core.extmark").ranges(bufnr, topline, botline_guess)
     vim
-      .iter(ranges)
-      :filter(function(range)
-        return not range.is_deleted
+      .iter(extmark_ranges)
+      :filter(function(extmark_range)
+        return not extmark_range.is_deleted
       end)
-      :each(function(range)
-        vim.api.nvim_buf_set_extmark(bufnr, ns, range.start_row, range.start_col, {
+      :each(function(extmark_range)
+        vim.api.nvim_buf_set_extmark(bufnr, ns, extmark_range.start_row, extmark_range.start_col, {
           end_col = 0,
-          end_row = range.end_row + 1,
+          end_row = extmark_range.end_row + 1,
           hl_eol = true,
           hl_group = count % 2 == 0 and hl_groups.UnionbufBackgroundEven or hl_groups.UnionbufBackgroundOdd,
           ephemeral = true,

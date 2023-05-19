@@ -6,13 +6,16 @@ local ns = require("unionbuf.core.entries").ns
 local tracker_ns = vim.api.nvim_create_namespace("unionbuf_tracker")
 
 function M.write(union_bufnr, entry_map)
-  local ranges = require("unionbuf.core.extmark").ranges(union_bufnr, 0, -1)
-  local all_entry_pairs = vim.tbl_map(function(range)
-    return {
-      range = range,
-      entry = entry_map[range.extmark_id],
-    }
-  end, ranges)
+  local extmark_ranges = require("unionbuf.core.extmark").ranges(union_bufnr, 0, -1)
+  local all_entry_pairs = vim
+    .iter(extmark_ranges)
+    :map(function(extmark_range)
+      return {
+        extmark_range = extmark_range,
+        entry = entry_map[extmark_range.extmark_id],
+      }
+    end)
+    :totable()
 
   local groups = require("unionbuf.vendor.misclib.collection.list").group_by(all_entry_pairs, function(pair)
     return pair.entry.bufnr
@@ -29,9 +32,9 @@ function M.write(union_bufnr, entry_map)
       return a.entry.end_row > b.entry.end_row
     end)
     for _, pair in ipairs(reversed_pairs) do
-      local range = pair.range
+      local extmark_range = pair.extmark_range
       local entry = pair.entry
-      if not range.is_deleted then
+      if not extmark_range.is_deleted then
         vim.api.nvim_buf_set_extmark(entry_bufnr, tracker_ns, entry.start_row, entry.start_col, {
           end_row = entry.end_row,
           end_col = entry.end_col,
@@ -40,11 +43,11 @@ function M.write(union_bufnr, entry_map)
         })
       end
 
-      local changed = M._set_text(union_bufnr, range, entry)
+      local changed = M._set_text(union_bufnr, extmark_range, entry)
       changed_bufnrs[entry_bufnr] = changed_bufnrs[entry_bufnr] or changed
 
-      if range.is_deleted then
-        vim.api.nvim_buf_del_extmark(union_bufnr, ns, range.extmark_id)
+      if extmark_range.is_deleted then
+        vim.api.nvim_buf_del_extmark(union_bufnr, ns, extmark_range.extmark_id)
       end
     end
   end
@@ -91,7 +94,7 @@ function M.write(union_bufnr, entry_map)
   return new_raw_entries
 end
 
-function M._set_text(union_bufnr, range, entry)
+function M._set_text(union_bufnr, extmark_range, entry)
   if entry:is_already_changed() then
     local msg = ("[unionbuf] Original buffer(bufnr=%d, start_row=%d) has already changed."):format(
       entry.bufnr,
@@ -102,16 +105,23 @@ function M._set_text(union_bufnr, range, entry)
   end
 
   local lines
-  if range.is_deleted then
+  if extmark_range.is_deleted then
     lines = {}
   else
-    lines = vim.api.nvim_buf_get_text(union_bufnr, range.start_row, range.start_col, range.end_row, range.end_col, {})
+    lines = vim.api.nvim_buf_get_text(
+      union_bufnr,
+      extmark_range.start_row,
+      extmark_range.start_col,
+      extmark_range.end_row,
+      extmark_range.end_col,
+      {}
+    )
   end
   if vim.deep_equal(lines, entry.lines) then
     return false
   end
 
-  if range.is_deleted and entry:is_lines() then
+  if extmark_range.is_deleted and entry:is_lines() then
     vim.api.nvim_buf_set_lines(entry.bufnr, entry.start_row, entry.end_row + 1, false, {})
   else
     vim.api.nvim_buf_set_text(entry.bufnr, entry.start_row, entry.start_col, entry.end_row, entry.end_col, lines)
