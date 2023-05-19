@@ -158,9 +158,8 @@ function M.deleted_map(union_bufnr, all_extmarks)
 
   local is_deleted = function(i, extmark)
     local start_col = extmark[3]
-    local end_col = extmark[4].end_col
-    if start_col ~= end_col then
-      return false
+    if start_col > 0 then
+      return true
     end
 
     local neighborhood = extmarks[i + 1] or extmarks[i - 1]

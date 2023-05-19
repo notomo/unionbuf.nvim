@@ -23,31 +23,18 @@ function M.read(union_bufnr, entries)
   local row = 0
   local entry_map = {}
   for _, entry in ipairs(entries) do
-    local line_count = #entry.lines
-    local end_col = #entry.lines[line_count]
-    local end_row = row + line_count - 1
-
     local extmark_id = vim.api.nvim_buf_set_extmark(union_bufnr, ns, row, 0, {
-      end_col = end_col,
-      end_row = end_row,
       right_gravity = false,
-      end_right_gravity = true,
     })
     entry_map[extmark_id] = entry
-
-    row = end_row + 1
+    row = row + #entry.lines
   end
 
   local deletion_detector_ns = Entries.deletion_detector_ns
   vim.api.nvim_buf_clear_namespace(union_bufnr, deletion_detector_ns, 0, -1)
   vim.api.nvim_buf_set_extmark(union_bufnr, deletion_detector_ns, row, 0, {
-    end_col = 0,
-    end_row = row,
     right_gravity = false,
-    end_right_gravity = true,
   })
-
-  -- TODO: keep border newline if not deleted entry
 
   return entry_map
 end
@@ -62,24 +49,17 @@ vim.api.nvim_set_decoration_provider(highlight_ns, {
     if vim.bo[bufnr].filetype ~= "unionbuf" then
       return false
     end
-    local all_extmarks = vim.api.nvim_buf_get_extmarks(
-      bufnr,
-      ns,
-      { topline, 0 },
-      { botline_guess, -1 },
-      { details = true }
-    )
     local count = 1
-    local deleted_map = Entries.deleted_map(bufnr, all_extmarks)
+    local ranges = require("unionbuf.core.extmark").ranges(bufnr, topline, botline_guess)
     vim
-      .iter(all_extmarks)
-      :filter(function(extmark)
-        return not deleted_map[extmark[1]]
+      .iter(ranges)
+      :filter(function(range)
+        return not range.is_deleted
       end)
-      :each(function(extmark)
-        vim.api.nvim_buf_set_extmark(bufnr, ns, extmark[2], extmark[3], {
-          end_col = extmark[4].end_col,
-          end_row = extmark[4].end_row,
+      :each(function(range)
+        vim.api.nvim_buf_set_extmark(bufnr, ns, range.start_row, range.start_col, {
+          end_col = 0,
+          end_row = range.end_row + 1,
           hl_eol = true,
           hl_group = count % 2 == 0 and hl_groups.UnionbufBackgroundEven or hl_groups.UnionbufBackgroundOdd,
           ephemeral = true,
