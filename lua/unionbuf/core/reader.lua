@@ -24,15 +24,17 @@ function M.read(union_bufnr, entries)
   local entry_map = {}
   for _, entry in ipairs(entries) do
     local extmark_id = vim.api.nvim_buf_set_extmark(union_bufnr, ns, row, 0, {
+      id = entry.extmark_id,
       right_gravity = false,
     })
     entry_map[extmark_id] = entry
-    row = row + #entry.lines
+    row = row + entry:height()
   end
 
   local deletion_detector_ns = Entries.deletion_detector_ns
-  vim.api.nvim_buf_clear_namespace(union_bufnr, deletion_detector_ns, 0, -1)
+  local detector_mark = vim.api.nvim_buf_get_extmarks(union_bufnr, deletion_detector_ns, 0, -1, {})[1] or {}
   vim.api.nvim_buf_set_extmark(union_bufnr, deletion_detector_ns, row, 0, {
+    id = detector_mark[1],
     right_gravity = false,
   })
 

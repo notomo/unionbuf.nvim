@@ -71,6 +71,9 @@ function M._merge(entries)
 end
 
 function M._merge_one(entry, next_entry)
+  if entry.is_deleted or next_entry.is_deleted then
+    return nil
+  end
   if entry.end_row < next_entry.start_row then
     return nil
   end
@@ -83,6 +86,7 @@ function M._merge_one(entry, next_entry)
     start_col = entry.start_col,
     end_row = next_entry.end_row,
     end_col = next_entry.end_col,
+    extmark_id = entry.extmark_id,
   }
 end
 
@@ -112,14 +116,20 @@ function Entry.new(raw_entry)
 
   local start_col = raw_entry.start_col or 0
   local end_col = raw_entry.end_col or -1
-  local lines = vim.api.nvim_buf_get_text(bufnr, start_row, start_col, end_row, end_col, {})
+  local is_deleted = raw_entry.is_deleted or false
+  local lines
+  if is_deleted then
+    lines = {}
+  else
+    lines = vim.api.nvim_buf_get_text(bufnr, start_row, start_col, end_row, end_col, {})
+  end
   if start_row == end_row and start_col > end_col and end_col >= 0 then
     start_col, end_col = end_col, start_col
   end
 
   local original_end_col = end_col
   if end_col == -1 then
-    local last_line = lines[#lines]
+    local last_line = lines[#lines] or ""
     end_col = start_col + #last_line
   end
 
@@ -131,11 +141,17 @@ function Entry.new(raw_entry)
     end_col = end_col,
     _original_end_col = original_end_col,
     lines = lines,
+    is_deleted = is_deleted,
+    is_lines_before_deleted = raw_entry.is_lines_before_deleted or false,
+    extmark_id = raw_entry.extmark_id,
   }
   return setmetatable(tbl, Entry)
 end
 
 function Entry.is_already_changed(self)
+  if self.is_deleted then
+    return not vim.deep_equal({}, self.lines)
+  end
   local lines = vim.api.nvim_buf_get_text(self.bufnr, self.start_row, self.start_col, self.end_row, self.end_col, {})
   return not vim.deep_equal(lines, self.lines)
 end
@@ -149,6 +165,13 @@ function Entry.is_lines(self)
   end
   local last_line = vim.api.nvim_buf_get_lines(self.bufnr, self.end_row, self.end_row + 1, false)[1]
   return self.end_col == #last_line
+end
+
+function Entry.height(self)
+  if self.is_deleted then
+    return 0
+  end
+  return #self.lines
 end
 
 return M
