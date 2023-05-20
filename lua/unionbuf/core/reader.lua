@@ -9,11 +9,21 @@ local ns = Entries.ns
 function M.read(union_bufnr, entries)
   vim.api.nvim_buf_clear_namespace(union_bufnr, ns, 0, -1)
 
-  local all_lines = vim.iter(entries):fold({}, function(t, entry)
-    vim.list_extend(t, entry.lines)
-    return t
+  local is_deleted_all = vim.iter(entries):all(function(entry)
+    return entry.is_deleted
   end)
+  local all_lines
+  if is_deleted_all then
+    all_lines = { "" }
+  else
+    all_lines = vim.iter(entries):fold({}, function(t, entry)
+      vim.list_extend(t, entry.lines)
+      return t
+    end)
+  end
+
   local current_lines = vim.api.nvim_buf_get_lines(union_bufnr, 0, -1, false)
+
   if not vim.deep_equal(all_lines, current_lines) then
     vim.api.nvim_buf_set_lines(union_bufnr, 0, -1, false, all_lines)
     vim.bo[union_bufnr].modified = false

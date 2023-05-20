@@ -825,4 +825,41 @@ test1
 ^test1
 $]])
   end)
+
+  it("can undo after deleting all entries", function()
+    local bufnr1 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(
+      bufnr1,
+      [[
+test1
+test2
+test3
+]]
+    )
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+      },
+      {
+        bufnr = bufnr1,
+        start_row = 2,
+      },
+    }
+    unionbuf.open(entries)
+
+    vim.cmd("%delete")
+
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
+
+    vim.cmd.undo({ mods = { silent = true } })
+
+    assert.exists_pattern([[
+^test1
+test3
+$]])
+  end)
 end)
