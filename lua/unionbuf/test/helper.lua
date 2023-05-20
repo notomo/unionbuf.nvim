@@ -19,6 +19,10 @@ function helper.set_lines(bufnr, lines)
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(lines, "\n"))
 end
 
+function helper.break_undo()
+  vim.cmd.normal({ bang = true, args = { "i" .. vim.keycode("<C-g>u") } })
+end
+
 local asserts = require("vusted.assert").asserts
 local asserters = require(plugin_name .. ".vendor.assertlib").list()
 require(plugin_name .. ".vendor.misclib.test.assert").register(asserts.create, asserters)

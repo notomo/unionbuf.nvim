@@ -862,4 +862,154 @@ test3
 test3
 $]])
   end)
+
+  it("can undo deleting an entry", function()
+    local bufnr1 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(
+      bufnr1,
+      [[
+test1_1
+test1_2
+test1_3
+]]
+    )
+
+    local bufnr2 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(
+      bufnr2,
+      [[
+test2_1
+test2_2
+test2_3
+]]
+    )
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+      },
+      {
+        bufnr = bufnr2,
+        start_row = 1,
+      },
+      {
+        bufnr = bufnr1,
+        start_row = 2,
+      },
+    }
+    unionbuf.open(entries)
+
+    vim.cmd("3delete")
+
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
+    assert.exists_pattern([[
+^test1_1
+test1_3
+$]])
+
+    vim.cmd.undo({ mods = { silent = true } })
+
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
+    assert.exists_pattern([[
+^test1_1
+test1_3
+test2_2
+$]])
+
+    vim.cmd.buffer(bufnr1)
+    assert.exists_pattern([[
+^test1_1
+test1_2
+test1_3
+$]])
+
+    vim.cmd.buffer(bufnr2)
+    assert.exists_pattern([[
+^test2_1
+test2_2
+test2_3
+$]])
+  end)
+
+  it("can undo deleting entries multiple times", function()
+    local bufnr1 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(
+      bufnr1,
+      [[
+test1
+test2
+test3
+test4
+test5
+]]
+    )
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+      },
+      {
+        bufnr = bufnr1,
+        start_row = 2,
+      },
+      {
+        bufnr = bufnr1,
+        start_row = 4,
+      },
+    }
+    unionbuf.open(entries)
+
+    vim.cmd("2delete")
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
+    assert.exists_pattern([[
+^test1
+test5
+$]])
+
+    helper.break_undo() -- HACK: for testing
+
+    vim.cmd("2delete")
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
+    assert.exists_pattern([[
+^test1
+$]])
+
+    vim.cmd.undo({ mods = { silent = true } })
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
+    assert.exists_pattern([[
+^test1
+test5
+$]])
+
+    vim.cmd.undo({ mods = { silent = true } })
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
+    assert.exists_pattern([[
+^test1
+test3
+test5
+$]])
+
+    vim.cmd.buffer(bufnr1)
+    assert.exists_pattern([[
+^test1
+test2
+test3
+test4
+test5
+$]])
+  end)
 end)
