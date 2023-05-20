@@ -34,19 +34,11 @@ function M.write(union_bufnr, entry_map)
     for _, pair in ipairs(reversed_pairs) do
       local extmark_range = pair.extmark_range
       local entry = pair.entry
-
-      local tracker_id = vim.api.nvim_buf_set_extmark(entry_bufnr, tracker_ns, entry.start_row, entry.start_col, {
-        end_row = entry.end_row,
-        end_col = entry.end_col,
-        right_gravity = false,
-        end_right_gravity = true,
-      })
-
-      local changed, is_lines_before_deleted = M._set_text(union_bufnr, extmark_range, entry)
+      local tracker_id, changed, is_lines_before_deleted = M._set_text(union_bufnr, extmark_range, entry)
       changed_bufnrs[entry_bufnr] = changed_bufnrs[entry_bufnr] or changed
       tracked_map[tracker_id] = {
         extmark_range = extmark_range,
-        entry = entry,
+        changed = changed,
         is_lines_before_deleted = is_lines_before_deleted,
       }
     end
@@ -74,25 +66,22 @@ function M.write(union_bufnr, entry_map)
     local raw_entries
     if changed_bufnrs[entry_bufnr] then
       local tracker_extmarks = vim.api.nvim_buf_get_extmarks(entry_bufnr, tracker_ns, 0, -1, { details = true })
-      raw_entries = vim.tbl_map(function(extmark)
-        local tracked = tracked_map[extmark[1]]
-        local end_row = extmark[4].end_row
-        local end_col = extmark[4].end_col
-        if tracked.entry.is_lines_before_deleted then
-          end_row = end_row - 1
-          end_col = -1
-        end
-        return {
-          bufnr = entry_bufnr,
-          start_row = extmark[2],
-          start_col = extmark[3],
-          end_row = end_row,
-          end_col = end_col,
-          is_deleted = tracked.extmark_range.is_deleted,
-          extmark_id = tracked.extmark_range.extmark_id,
-          is_lines_before_deleted = tracked.is_lines_before_deleted,
-        }
-      end, tracker_extmarks)
+      raw_entries = vim
+        .iter(tracker_extmarks)
+        :map(function(extmark)
+          local tracked = tracked_map[extmark[1]]
+          return {
+            bufnr = entry_bufnr,
+            start_row = extmark[2],
+            start_col = extmark[3],
+            end_row = extmark[4].end_row,
+            end_col = extmark[4].end_col,
+            is_deleted = tracked.extmark_range.is_deleted,
+            extmark_id = tracked.extmark_range.extmark_id,
+            is_lines_before_deleted = tracked.is_lines_before_deleted,
+          }
+        end)
+        :totable()
     else
       raw_entries = vim.tbl_map(function(entry_pair)
         return entry_pair.entry
@@ -105,13 +94,20 @@ function M.write(union_bufnr, entry_map)
 end
 
 function M._set_text(union_bufnr, extmark_range, entry)
+  local tracker_id = vim.api.nvim_buf_set_extmark(entry.bufnr, tracker_ns, entry.start_row, entry.start_col, {
+    end_row = entry.end_row,
+    end_col = entry.end_col,
+    right_gravity = entry.is_deleted,
+    end_right_gravity = true,
+  })
+
   if entry:is_already_changed() then
     local msg = ("[unionbuf] Original buffer(bufnr=%d, start_row=%d) has already changed."):format(
       entry.bufnr,
       entry.start_row
     )
     vim.notify(msg, vim.log.levels.WARN)
-    return false, false
+    return tracker_id, false, entry.is_lines_before_deleted
   end
 
   local lines
@@ -128,12 +124,19 @@ function M._set_text(union_bufnr, extmark_range, entry)
     )
   end
   if vim.deep_equal(lines, entry.lines) then
-    return false, false
+    return tracker_id, false, entry.is_lines_before_deleted
   end
 
   local is_lines_before_deleted = false
   if entry.is_lines_before_deleted then
     vim.api.nvim_buf_set_lines(entry.bufnr, entry.start_row, entry.end_row, false, lines)
+    vim.api.nvim_buf_set_extmark(entry.bufnr, tracker_ns, entry.start_row, entry.start_col, {
+      id = tracker_id,
+      end_row = entry.start_row + #lines - 1,
+      end_col = #lines[#lines],
+      right_gravity = true,
+      end_right_gravity = true,
+    })
   elseif extmark_range.is_deleted and entry:is_lines() then
     vim.api.nvim_buf_set_lines(entry.bufnr, entry.start_row, entry.end_row + 1, false, {})
     is_lines_before_deleted = true
@@ -141,7 +144,7 @@ function M._set_text(union_bufnr, extmark_range, entry)
     vim.api.nvim_buf_set_text(entry.bufnr, entry.start_row, entry.start_col, entry.end_row, entry.end_col, lines)
   end
 
-  return true, is_lines_before_deleted
+  return tracker_id, true, is_lines_before_deleted
 end
 
 return M
