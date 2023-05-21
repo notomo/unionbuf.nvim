@@ -20,7 +20,7 @@ function M.write(union_bufnr, entry_map)
     return pair.entry.bufnr
   end)
   local changed_bufnrs = {}
-  local tracked_map = {}
+  local all_tracked_map = {}
   for _, group in ipairs(groups) do
     local entry_bufnr, entry_pairs = unpack(group)
 
@@ -31,6 +31,8 @@ function M.write(union_bufnr, entry_map)
       end
       return a.entry.end_row > b.entry.end_row
     end)
+
+    local tracked_map = {}
     for _, pair in ipairs(reversed_pairs) do
       local extmark_range = pair.extmark_range
       local entry = pair.entry
@@ -42,6 +44,7 @@ function M.write(union_bufnr, entry_map)
         is_lines_before_deleted = is_lines_before_deleted,
       }
     end
+    all_tracked_map[entry_bufnr] = tracked_map
   end
 
   vim
@@ -63,6 +66,7 @@ function M.write(union_bufnr, entry_map)
   local new_raw_entries = {}
   for _, group in ipairs(groups) do
     local entry_bufnr, entry_pairs = unpack(group)
+    local tracked_map = all_tracked_map[entry_bufnr]
     local raw_entries
     if changed_bufnrs[entry_bufnr] then
       local tracker_extmarks = vim.api.nvim_buf_get_extmarks(entry_bufnr, tracker_ns, 0, -1, { details = true })

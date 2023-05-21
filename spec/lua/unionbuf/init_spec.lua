@@ -1012,4 +1012,36 @@ test4
 test5
 $]])
   end)
+
+  it("deletes entries if they are joined", function()
+    local bufnr1 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(bufnr1, [[test1]])
+
+    local bufnr2 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(bufnr2, [[test2]])
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+      },
+      {
+        bufnr = bufnr2,
+        start_row = 0,
+      },
+    }
+    unionbuf.open(entries)
+
+    vim.cmd.join()
+
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
+
+    vim.cmd.buffer(bufnr1)
+    assert.exists_pattern("^test1 test2$")
+
+    vim.cmd.buffer(bufnr2)
+    assert.exists_pattern("^$")
+  end)
 end)
