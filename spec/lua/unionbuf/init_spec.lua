@@ -1071,4 +1071,34 @@ test2]]
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern("^test1$")
   end)
+
+  it("can use with nvim_buf_set_lines on the last line of unionbuf", function()
+    local bufnr1 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(
+      bufnr1,
+      [[
+test1
+test2]]
+    )
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+      },
+    }
+    unionbuf.open(entries)
+
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "edited" })
+
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
+
+    vim.cmd.buffer(bufnr1)
+    assert.exists_pattern([[
+^edited
+test2
+$]])
+  end)
 end)

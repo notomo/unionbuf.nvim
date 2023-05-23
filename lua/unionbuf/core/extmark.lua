@@ -60,11 +60,9 @@ function M._end_row(union_bufnr, extmarks, i, start_row, deleted_map)
   return vim.api.nvim_buf_line_count(union_bufnr) - 1
 end
 
-function M._deleted_map(union_bufnr, all_extmarks)
-  local extmarks = vim.iter(all_extmarks):totable()
-  local detector_mark =
+function M._deleted_map(union_bufnr, extmarks)
+  local detector =
     vim.api.nvim_buf_get_extmarks(union_bufnr, Entries.deletion_detector_ns, 0, -1, { details = true })[1]
-  table.insert(extmarks, detector_mark)
 
   local is_deleted = function(i, extmark)
     local start_col = extmark[3]
@@ -72,17 +70,25 @@ function M._deleted_map(union_bufnr, all_extmarks)
       return true
     end
 
-    local neighborhood = extmarks[i + 1] or extmarks[i - 1]
-    if not neighborhood then
-      return false
+    local start_row = extmark[2]
+    local neighborhood = extmarks[i + 1]
+    if neighborhood then
+      return start_row == neighborhood[2] and start_col == neighborhood[3]
     end
 
-    local start_row = extmark[2]
-    return start_row == neighborhood[2] and start_col == neighborhood[3]
+    local max_row = vim.api.nvim_buf_line_count(union_bufnr)
+    if max_row < start_row + 1 then
+      return true
+    end
+
+    local lines = vim.api.nvim_buf_get_lines(union_bufnr, start_row, -1, {})
+    return start_row == detector[2]
+      and start_col == detector[3]
+      and (#lines == 0 or (max_row == 1 and #lines == 1 and lines[1] == ""))
   end
 
   local deleted_map = {}
-  for i, extmark in ipairs(all_extmarks) do
+  for i, extmark in ipairs(extmarks) do
     deleted_map[extmark[1]] = is_deleted(i, extmark)
   end
   return deleted_map
