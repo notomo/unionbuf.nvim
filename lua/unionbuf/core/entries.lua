@@ -74,10 +74,15 @@ function M._merge_one(entry, next_entry)
   if entry.is_deleted or next_entry.is_deleted then
     return nil
   end
-  if entry.end_row < next_entry.start_row then
+  if entry.end_row + 1 < next_entry.start_row then
     return nil
   end
   if entry.end_row == next_entry.start_row and entry.end_col < next_entry.start_col then
+    return nil
+  end
+  if
+    entry.end_row + 1 == next_entry.start_row and not (next_entry.start_col == 0 and Entry._contain_end_of_line(entry))
+  then
     return nil
   end
   return {
@@ -160,6 +165,10 @@ function Entry.is_lines(self)
   if self.start_col ~= 0 then
     return false
   end
+  return self:_contain_end_of_line()
+end
+
+function Entry._contain_end_of_line(self)
   if self._original_end_col == -1 then
     return true
   end
