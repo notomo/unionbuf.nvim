@@ -61,14 +61,20 @@ vim.api.nvim_set_decoration_provider(highlight_ns, {
     if vim.bo[bufnr].filetype ~= "unionbuf" then
       return false
     end
-    local count = 1
-    local extmark_ranges = require("unionbuf.core.extmark").ranges(bufnr, topline, botline_guess)
+    local count = 0
+    local extmark_ranges = require("unionbuf.core.extmark").ranges(bufnr, 0, botline_guess)
     vim
       .iter(extmark_ranges)
       :filter(function(extmark_range)
         return not extmark_range.is_deleted
       end)
       :each(function(extmark_range)
+        count = count + 1
+
+        if extmark_range.end_row < topline then
+          return
+        end
+
         vim.api.nvim_buf_set_extmark(bufnr, ns, extmark_range.start_row, extmark_range.start_col, {
           end_col = 0,
           end_row = extmark_range.end_row + 1,
@@ -76,7 +82,6 @@ vim.api.nvim_set_decoration_provider(highlight_ns, {
           hl_group = count % 2 == 0 and hl_groups.UnionbufBackgroundEven or hl_groups.UnionbufBackgroundOdd,
           ephemeral = true,
         })
-        count = count + 1
       end)
   end,
 })
