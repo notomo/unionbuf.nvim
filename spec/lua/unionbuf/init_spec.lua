@@ -1101,4 +1101,38 @@ test2]]
 test2
 $]])
   end)
+
+  it("can handle adjacent lines", function()
+    local bufnr1 = vim.api.nvim_create_buf(false, true)
+    helper.set_lines(
+      bufnr1,
+      [[
+test1
+test2]]
+    )
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+      },
+      {
+        bufnr = bufnr1,
+        start_row = 1,
+      },
+    }
+    unionbuf.open(entries)
+
+    vim.fn.setline(2, "edited_2")
+
+    assert.lines_after(function()
+      vim.cmd.write()
+    end)
+
+    vim.cmd.buffer(bufnr1)
+    assert.exists_pattern([[
+^test1
+edited_2
+$]])
+  end)
 end)
