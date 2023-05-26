@@ -21,6 +21,7 @@ function M.write(union_bufnr, entry_map)
   end)
   local changed_bufnrs = {}
   local all_tracked_map = {}
+  local warns = {}
   for _, group in ipairs(groups) do
     local entry_bufnr, entry_pairs = unpack(group)
 
@@ -36,13 +37,16 @@ function M.write(union_bufnr, entry_map)
     for _, pair in ipairs(reversed_pairs) do
       local extmark_range = pair.extmark_range
       local entry = pair.entry
-      local tracker_id, changed, is_lines_before_deleted = M._set_text(union_bufnr, extmark_range, entry)
+      local tracker_id, changed, is_lines_before_deleted, warn = M._set_text(union_bufnr, extmark_range, entry)
       changed_bufnrs[entry_bufnr] = changed_bufnrs[entry_bufnr] or changed
       tracked_map[tracker_id] = {
         extmark_range = extmark_range,
         changed = changed,
         is_lines_before_deleted = is_lines_before_deleted,
       }
+      if warn then
+        table.insert(warns, warn)
+      end
     end
     all_tracked_map[entry_bufnr] = tracked_map
   end
@@ -94,7 +98,11 @@ function M.write(union_bufnr, entry_map)
     vim.list_extend(new_raw_entries, raw_entries)
     vim.api.nvim_buf_clear_namespace(entry_bufnr, tracker_ns, 0, -1)
   end
-  return new_raw_entries
+
+  if #warns > 0 then
+    return new_raw_entries, table.concat(warns, "\n")
+  end
+  return new_raw_entries, nil
 end
 
 function M._set_text(union_bufnr, extmark_range, entry)
@@ -106,12 +114,11 @@ function M._set_text(union_bufnr, extmark_range, entry)
   })
 
   if entry:is_already_changed() then
-    local msg = ("[unionbuf] Original buffer(bufnr=%d, start_row=%d) has already changed."):format(
+    local warn = ("[unionbuf] Original buffer(bufnr=%d, start_row=%d) has already changed."):format(
       entry.bufnr,
       entry.start_row
     )
-    vim.notify(msg, vim.log.levels.WARN)
-    return tracker_id, false, entry.is_lines_before_deleted
+    return tracker_id, false, entry.is_lines_before_deleted, warn
   end
 
   local lines
