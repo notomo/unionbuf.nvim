@@ -82,7 +82,7 @@ vim.api.nvim_set_decoration_provider(highlight_ns, {
         return
       end
 
-      vim.api.nvim_buf_set_extmark(bufnr, ns, extmark_range.start_row, extmark_range.start_col, {
+      vim.api.nvim_buf_set_extmark(bufnr, ns, extmark_range.start_row, 0, {
         end_col = 0,
         end_row = extmark_range.end_row + 1,
         hl_eol = true,

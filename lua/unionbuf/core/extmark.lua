@@ -6,13 +6,7 @@ local ns = Entries.ns
 
 function M.ranges(union_bufnr, range_start_row, range_end_row)
   local ranges = {}
-  local extmarks = vim.api.nvim_buf_get_extmarks(
-    union_bufnr,
-    ns,
-    { range_start_row, 0 },
-    { range_end_row, -1 },
-    { details = true }
-  )
+  local extmarks = vim.api.nvim_buf_get_extmarks(union_bufnr, ns, { range_start_row, 0 }, { range_end_row, -1 }, {})
   local deleted_map = M._deleted_map(union_bufnr, extmarks)
   for i, extmark in ipairs(extmarks) do
     local extmark_id = extmark[1]
@@ -29,7 +23,7 @@ function M.ranges(union_bufnr, range_start_row, range_end_row)
         extmark_id = extmark_id,
         is_deleted = is_deleted,
         start_row = start_row,
-        start_col = extmark[3],
+        start_col = 0,
         end_row = M._end_row(union_bufnr, extmarks, i, start_row, deleted_map),
         end_col = -1,
       }
@@ -45,13 +39,7 @@ function M._end_row(union_bufnr, extmarks, i, start_row, deleted_map)
     return extmark[2] - 1
   end
 
-  local next_extmarks = vim.api.nvim_buf_get_extmarks(
-    union_bufnr,
-    ns,
-    { start_row + 1, 0 },
-    -1,
-    { details = true, limit = 1 }
-  )
+  local next_extmarks = vim.api.nvim_buf_get_extmarks(union_bufnr, ns, { start_row + 1, 0 }, -1, { limit = 1 })
   local next_extmark = next_extmarks[1]
   if next_extmark then
     return next_extmark[2] - 1
@@ -61,8 +49,7 @@ function M._end_row(union_bufnr, extmarks, i, start_row, deleted_map)
 end
 
 function M._deleted_map(union_bufnr, extmarks)
-  local detector =
-    vim.api.nvim_buf_get_extmarks(union_bufnr, Entries.deletion_detector_ns, 0, -1, { details = true })[1]
+  local detector = vim.api.nvim_buf_get_extmarks(union_bufnr, Entries.deletion_detector_ns, 0, -1, {})[1]
 
   local is_deleted = function(i, extmark)
     local start_col = extmark[3]
