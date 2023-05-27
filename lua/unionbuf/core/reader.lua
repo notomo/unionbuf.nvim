@@ -66,9 +66,8 @@ vim.api.nvim_set_decoration_provider(highlight_ns, {
       :filter(function(extmark_range)
         return not extmark_range.is_deleted
       end)
-      :totable()
 
-    if #extmark_ranges == 0 then
+    if not extmark_ranges:peek() then
       vim.api.nvim_buf_set_extmark(bufnr, ns, 0, 0, {
         virt_text = { { "(no entries)", hl_groups.UnionbufNoEntries } },
         ephemeral = true,
@@ -76,7 +75,9 @@ vim.api.nvim_set_decoration_provider(highlight_ns, {
       return
     end
 
-    for i, extmark_range in ipairs(extmark_ranges) do
+    local count = 0
+    extmark_ranges:each(function(extmark_range)
+      count = count + 1
       if extmark_range.end_row < topline then
         return
       end
@@ -85,10 +86,10 @@ vim.api.nvim_set_decoration_provider(highlight_ns, {
         end_col = 0,
         end_row = extmark_range.end_row + 1,
         hl_eol = true,
-        hl_group = i % 2 == 0 and hl_groups.UnionbufBackgroundEven or hl_groups.UnionbufBackgroundOdd,
+        hl_group = count % 2 == 0 and hl_groups.UnionbufBackgroundEven or hl_groups.UnionbufBackgroundOdd,
         ephemeral = true,
       })
-    end
+    end)
   end,
 })
 
