@@ -61,28 +61,34 @@ vim.api.nvim_set_decoration_provider(highlight_ns, {
     if vim.bo[bufnr].filetype ~= "unionbuf" then
       return false
     end
-    local count = 0
-    local extmark_ranges = require("unionbuf.core.extmark").ranges(bufnr, 0, botline_guess)
-    vim
-      .iter(extmark_ranges)
+    local extmark_ranges = vim
+      .iter(require("unionbuf.core.extmark").ranges(bufnr, 0, botline_guess))
       :filter(function(extmark_range)
         return not extmark_range.is_deleted
       end)
-      :each(function(extmark_range)
-        count = count + 1
+      :totable()
 
-        if extmark_range.end_row < topline then
-          return
-        end
+    if #extmark_ranges == 0 then
+      vim.api.nvim_buf_set_extmark(bufnr, ns, 0, 0, {
+        virt_text = { { "(no entries)", hl_groups.UnionbufNoEntries } },
+        ephemeral = true,
+      })
+      return
+    end
 
-        vim.api.nvim_buf_set_extmark(bufnr, ns, extmark_range.start_row, extmark_range.start_col, {
-          end_col = 0,
-          end_row = extmark_range.end_row + 1,
-          hl_eol = true,
-          hl_group = count % 2 == 0 and hl_groups.UnionbufBackgroundEven or hl_groups.UnionbufBackgroundOdd,
-          ephemeral = true,
-        })
-      end)
+    for i, extmark_range in ipairs(extmark_ranges) do
+      if extmark_range.end_row < topline then
+        return
+      end
+
+      vim.api.nvim_buf_set_extmark(bufnr, ns, extmark_range.start_row, extmark_range.start_col, {
+        end_col = 0,
+        end_row = extmark_range.end_row + 1,
+        hl_eol = true,
+        hl_group = i % 2 == 0 and hl_groups.UnionbufBackgroundEven or hl_groups.UnionbufBackgroundOdd,
+        ephemeral = true,
+      })
+    end
   end,
 })
 

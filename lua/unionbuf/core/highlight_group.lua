@@ -3,6 +3,7 @@ local setup_highlight_groups = function()
   return {
     UnionbufBackgroundOdd = highlightlib.link("UnionbufBackgroundOdd", "Normal"),
     UnionbufBackgroundEven = highlightlib.link("UnionbufBackgroundEven", "NormalFloat"),
+    UnionbufNoEntries = highlightlib.link("UnionbufNoEntries", "Comment"),
   }
 end
 
