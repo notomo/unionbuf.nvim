@@ -183,4 +183,18 @@ function Entry.height(self)
   return #self.lines
 end
 
+function M.lines(entries)
+  local is_deleted_all = vim.iter(entries):all(function(entry)
+    return entry.is_deleted
+  end)
+  if is_deleted_all then
+    return { "" }
+  end
+
+  return vim.iter(entries):fold({}, function(t, entry)
+    vim.list_extend(t, entry.lines)
+    return t
+  end)
+end
+
 return M
