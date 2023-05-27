@@ -38,9 +38,9 @@ function M.read(union_bufnr, entries)
   return entry_map
 end
 
-local highlight_ns = vim.api.nvim_create_namespace("unionbuf_highlight")
-vim.api.nvim_set_decoration_provider(highlight_ns, {})
-vim.api.nvim_set_decoration_provider(highlight_ns, {
+local decoration_ns = vim.api.nvim_create_namespace("unionbuf_decoration")
+vim.api.nvim_set_decoration_provider(decoration_ns, {})
+vim.api.nvim_set_decoration_provider(decoration_ns, {
   on_buf = function(_, bufnr)
     return vim.bo[bufnr].filetype == "unionbuf"
   end,
@@ -55,7 +55,7 @@ vim.api.nvim_set_decoration_provider(highlight_ns, {
       end)
 
     if not extmark_ranges:peek() then
-      vim.api.nvim_buf_set_extmark(bufnr, ns, 0, 0, {
+      vim.api.nvim_buf_set_extmark(bufnr, decoration_ns, 0, 0, {
         virt_text = { { "(no entries)", hl_groups.UnionbufNoEntries } },
         ephemeral = true,
       })
@@ -69,7 +69,7 @@ vim.api.nvim_set_decoration_provider(highlight_ns, {
         return
       end
 
-      vim.api.nvim_buf_set_extmark(bufnr, ns, extmark_range.start_row, 0, {
+      vim.api.nvim_buf_set_extmark(bufnr, decoration_ns, extmark_range.start_row, 0, {
         end_col = 0,
         end_row = extmark_range.end_row + 1,
         hl_eol = true,
