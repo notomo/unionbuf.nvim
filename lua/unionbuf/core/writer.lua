@@ -5,7 +5,7 @@ local M = {}
 local tracker_ns = vim.api.nvim_create_namespace("unionbuf_tracker")
 
 function M.write(union_bufnr, entry_map)
-  local extmark_ranges = require("unionbuf.core.extmark").ranges(union_bufnr, 0, -1)
+  local extmark_ranges = require("unionbuf.core.extmark").ranges(union_bufnr, -1)
   local all_entry_pairs = vim
     .iter(extmark_ranges)
     :map(function(extmark_range)

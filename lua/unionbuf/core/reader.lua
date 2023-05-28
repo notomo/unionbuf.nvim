@@ -20,21 +20,13 @@ function M.read(union_bufnr, entries)
   local row = 0
   local entry_map = {}
   for _, entry in ipairs(entries) do
+    row = row + entry:height()
     local extmark_id = vim.api.nvim_buf_set_extmark(union_bufnr, ns, row, 0, {
       id = entry.extmark_id,
       right_gravity = false,
     })
     entry_map[extmark_id] = entry
-    row = row + entry:height()
   end
-
-  local deletion_detector_ns = Entries.deletion_detector_ns
-  local detector_mark = vim.api.nvim_buf_get_extmarks(union_bufnr, deletion_detector_ns, 0, -1, {})[1] or {}
-  vim.api.nvim_buf_set_extmark(union_bufnr, deletion_detector_ns, row, 0, {
-    id = detector_mark[1],
-    right_gravity = false,
-  })
-
   return entry_map
 end
 
@@ -49,7 +41,7 @@ vim.api.nvim_set_decoration_provider(decoration_ns, {
       return false
     end
     local extmark_ranges = vim
-      .iter(require("unionbuf.core.extmark").ranges(bufnr, 0, botline_guess))
+      .iter(require("unionbuf.core.extmark").ranges(bufnr, botline_guess))
       :filter(function(extmark_range)
         return not extmark_range.is_deleted
       end)

@@ -3,7 +3,6 @@ local vim = vim
 local M = {}
 
 M.ns = vim.api.nvim_create_namespace("unionbuf")
-M.deletion_detector_ns = vim.api.nvim_create_namespace("unionbuf_deletion_detector")
 
 local Entry = {}
 Entry.__index = Entry
