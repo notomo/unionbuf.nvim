@@ -665,7 +665,7 @@ test1
     }
     unionbuf.open(entries)
 
-    vim.cmd.undo({ mods = { silent = true } })
+    helper.undo()
 
     assert.exists_pattern([[
 ^test1$]])
@@ -688,7 +688,7 @@ test1
 
     assert.lines_after_write()
 
-    vim.cmd.undo({ mods = { silent = true } })
+    helper.undo()
 
     assert.lines_after_write()
 
@@ -723,7 +723,7 @@ test3
 
     assert.lines_after_write()
 
-    vim.cmd.undo({ mods = { silent = true } })
+    helper.undo()
 
     assert.exists_pattern([[
 ^test1
@@ -768,7 +768,7 @@ test2_3
 test1_3
 $]])
 
-    vim.cmd.undo({ mods = { silent = true } })
+    helper.undo()
 
     assert.lines_after_write()
     assert.exists_pattern([[
@@ -836,14 +836,14 @@ $]])
 ^test1
 $]])
 
-    vim.cmd.undo({ mods = { silent = true } })
+    helper.undo()
     assert.lines_after_write()
     assert.exists_pattern([[
 ^test1
 test5
 $]])
 
-    vim.cmd.undo({ mods = { silent = true } })
+    helper.undo()
     assert.lines_after_write()
     assert.exists_pattern([[
 ^test1
@@ -1001,7 +1001,7 @@ test1_4$]],
       bufnr1
     )
 
-    vim.cmd.undo({ mods = { silent = true } })
+    helper.undo()
 
     assert.lines_after_write()
 
@@ -1060,7 +1060,7 @@ test2_4$]],
       bufnr2
     )
 
-    vim.cmd.undo({ mods = { silent = true } })
+    helper.undo()
 
     assert.lines_after_write()
 

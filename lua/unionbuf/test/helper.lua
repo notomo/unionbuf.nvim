@@ -25,6 +25,10 @@ function helper.break_undo()
   vim.cmd.normal({ bang = true, args = { "i" .. vim.keycode("<C-g>u") } })
 end
 
+function helper.undo()
+  vim.cmd.undo({ mods = { silent = true } })
+end
+
 local asserts = require("vusted.assert").asserts
 local asserters = require(plugin_name .. ".vendor.assertlib").list()
 require(plugin_name .. ".vendor.misclib.test.assert").register(asserts.create, asserters)
