@@ -15,8 +15,10 @@ function helper.after_each()
   helper.test_data:teardown()
 end
 
-function helper.set_lines(bufnr, lines)
+function helper.new_buffer(lines)
+  local bufnr = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(lines, "\n"))
+  return bufnr
 end
 
 function helper.break_undo()

@@ -6,48 +6,28 @@ describe("unionbuf.open()", function()
   after_each(helper.after_each)
 
   it("opens unionbuf buffer", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
-]]
-    )
+]])
 
-    local bufnr2 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr2,
-      [[
+    local bufnr2 = helper.new_buffer([[
 test2
-]]
-    )
+]])
 
-    local bufnr3 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr3,
-      [[
+    local bufnr3 = helper.new_buffer([[
 test3_1
 test3_2
-]]
-    )
+]])
 
-    local bufnr4 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr4,
-      [[
+    local bufnr4 = helper.new_buffer([[
 test4_1
 test4_2
-]]
-    )
+]])
 
-    local bufnr5 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr5,
-      [[
+    local bufnr5 = helper.new_buffer([[
 test5_1
 test5_2
-]]
-    )
+]])
 
     local entries = {
       {
@@ -94,23 +74,15 @@ st5$]])
   end)
 
   it("groups by buffer and sorts by row", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1_1
 test1_2
-]]
-    )
+]])
 
-    local bufnr2 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr2,
-      [[
+    local bufnr2 = helper.new_buffer([[
 test2_1
 test2_2
-]]
-    )
+]])
 
     local entries = {
       {
@@ -141,17 +113,13 @@ $]])
   end)
 
   it("merges intersected entries", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1_1
 test1_2
 test1_3
 test1_4
 test1_5
-]]
-    )
+]])
 
     local entries = {
       {
@@ -231,12 +199,8 @@ test2
   end)
 
   it("raises error if row positions are out of range", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
-test]]
-    )
+    local bufnr1 = helper.new_buffer([[
+test]])
 
     local ok, err = pcall(unionbuf.open, {
       {
@@ -260,13 +224,9 @@ describe("unionbuf buffer", function()
   after_each(helper.after_each)
 
   it("can reload entries", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
-]]
-    )
+]])
 
     local entries = {
       {
@@ -283,13 +243,9 @@ test1
   end)
 
   it("can edit an entry", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
-]]
-    )
+]])
 
     local entries = {
       {
@@ -311,21 +267,13 @@ test1
   end)
 
   it("can edit multiple buffer entries", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
-]]
-    )
+]])
 
-    local bufnr2 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr2,
-      [[
+    local bufnr2 = helper.new_buffer([[
 test2
-]]
-    )
+]])
 
     local entries = {
       {
@@ -357,14 +305,10 @@ test2
   end)
 
   it("can edit multiple entries in one buffer", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
 test2
-]]
-    )
+]])
 
     local entries = {
       {
@@ -393,14 +337,10 @@ $]])
   end)
 
   it("ignores unmodified entries", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1_1
 test1_2
-]]
-    )
+]])
     local modified1 = false
     vim.api.nvim_buf_attach(bufnr1, false, {
       on_lines = function()
@@ -408,13 +348,9 @@ test1_2
       end,
     })
 
-    local bufnr2 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr2,
-      [[
+    local bufnr2 = helper.new_buffer([[
 test2
-]]
-    )
+]])
     local modified2 = false
     vim.api.nvim_buf_attach(bufnr2, false, {
       on_lines = function()
@@ -452,14 +388,10 @@ test2
   end)
 
   it("does not change buffer if there is no changed entries on write", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
 test2
-]]
-    )
+]])
 
     local entries = {
       {
@@ -479,16 +411,12 @@ test2
   end)
 
   it("can delete entries", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
 test2
 test3
 test4
-]]
-    )
+]])
 
     local entries = {
       {
@@ -516,14 +444,10 @@ $]])
   end)
 
   it("can edit line entry to empty", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
 test2
-]]
-    )
+]])
 
     local entries = {
       {
@@ -547,14 +471,10 @@ $]])
   end)
 
   it("can delete partial entry", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
 test2
-]]
-    )
+]])
 
     local entries = {
       {
@@ -579,16 +499,12 @@ $]])
   end)
 
   it("can increase entry lines", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
 test2
 test3
 test4
-]]
-    )
+]])
 
     local entries = {
       {
@@ -621,16 +537,12 @@ $]])
   end)
 
   it("can decrease entry lines", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
 test2
 test3
 test4
-]]
-    )
+]])
 
     local entries = {
       {
@@ -656,15 +568,11 @@ $]])
   end)
 
   it("can delete entry that specfied end_col in end of line", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
 test2
 test3
-]]
-    )
+]])
 
     local entries = {
       {
@@ -690,15 +598,11 @@ $]])
   end)
 
   it("can write multiple times", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
 test2
 test3
-]]
-    )
+]])
 
     local entries = {
       {
@@ -737,13 +641,9 @@ $]])
   end)
 
   it("notifies warning if original buffer has already changed on write", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
-]]
-    )
+]])
 
     local entries = {
       {
@@ -769,13 +669,9 @@ test1
   end)
 
   it("cannot undo right after open", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
-]]
-    )
+]])
 
     local entries = {
       {
@@ -792,13 +688,9 @@ test1
   end)
 
   it("can undo after write", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
-]]
-    )
+]])
 
     local entries = {
       {
@@ -827,15 +719,11 @@ $]])
   end)
 
   it("can undo after deleting all entries", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
 test2
 test3
-]]
-    )
+]])
 
     local entries = {
       {
@@ -864,25 +752,17 @@ $]])
   end)
 
   it("can undo deleting an entry", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1_1
 test1_2
 test1_3
-]]
-    )
+]])
 
-    local bufnr2 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr2,
-      [[
+    local bufnr2 = helper.new_buffer([[
 test2_1
 test2_2
 test2_3
-]]
-    )
+]])
 
     local entries = {
       {
@@ -937,17 +817,13 @@ $]])
   end)
 
   it("can undo deleting entries multiple times", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
 test2
 test3
 test4
 test5
-]]
-    )
+]])
 
     local entries = {
       {
@@ -1014,11 +890,9 @@ $]])
   end)
 
   it("deletes entries if they are joined", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(bufnr1, [[test1]])
+    local bufnr1 = helper.new_buffer([[test1]])
 
-    local bufnr2 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(bufnr2, [[test2]])
+    local bufnr2 = helper.new_buffer([[test2]])
 
     local entries = {
       {
@@ -1046,13 +920,9 @@ $]])
   end)
 
   it("can delete an entry that is tha last line in original buffer", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
-test2]]
-    )
+test2]])
 
     local entries = {
       {
@@ -1073,13 +943,9 @@ test2]]
   end)
 
   it("can use with nvim_buf_set_lines on the last line of unionbuf", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
-test2]]
-    )
+test2]])
 
     local entries = {
       {
@@ -1103,13 +969,9 @@ $]])
   end)
 
   it("can handle adjacent lines", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1
-test2]]
-    )
+test2]])
 
     local entries = {
       {
@@ -1137,24 +999,16 @@ $]])
   end)
 
   it("can undo deleted lines in bottom of the entry", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1_1
 test1_2
 test1_3
-test1_4]]
-    )
+test1_4]])
 
-    local bufnr2 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr2,
-      [[
+    local bufnr2 = helper.new_buffer([[
 test2_1
 test2_2
-test2_3]]
-    )
+test2_3]])
 
     local entries = {
       {
@@ -1204,25 +1058,17 @@ test2_3$]])
   end)
 
   it("can undo deleted lines in top of the entry", function()
-    local bufnr1 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr1,
-      [[
+    local bufnr1 = helper.new_buffer([[
 test1_1
 test1_2
 test1_3
-test1_4]]
-    )
+test1_4]])
 
-    local bufnr2 = vim.api.nvim_create_buf(false, true)
-    helper.set_lines(
-      bufnr2,
-      [[
+    local bufnr2 = helper.new_buffer([[
 test2_1
 test2_2
 test2_3
-test2_4]]
-    )
+test2_4]])
 
     local entries = {
       {
