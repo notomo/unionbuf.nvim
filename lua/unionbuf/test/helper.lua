@@ -29,10 +29,10 @@ local asserts = require("vusted.assert").asserts
 local asserters = require(plugin_name .. ".vendor.assertlib").list()
 require(plugin_name .. ".vendor.misclib.test.assert").register(asserts.create, asserters)
 
-asserts.create("lines_after"):register(function(self)
-  return function(_, args)
+asserts.create("lines_after_write"):register(function(self)
+  return function(_, _)
     local before = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
-    args[1]()
+    vim.cmd.write()
     local after = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
 
     local diff = vim.diff(after, before, {})

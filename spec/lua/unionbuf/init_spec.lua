@@ -257,9 +257,7 @@ test1
 
     vim.fn.setline(1, "edited_1")
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern("^edited_1$")
@@ -291,9 +289,7 @@ test2
     vim.fn.setline(1, "edited_1")
     vim.fn.setline(2, "edited_2")
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern("^edited_1$")
@@ -325,9 +321,7 @@ test2
     vim.fn.setline(1, "edited_1")
     vim.fn.setline(2, "edited_2")
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
@@ -372,9 +366,7 @@ test2
 
     vim.fn.setline(1, "edited_1")
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern("^edited_1$")
@@ -405,9 +397,7 @@ test2
     }
     unionbuf.open(entries)
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
   end)
 
   it("can delete entries", function()
@@ -432,9 +422,7 @@ test4
 
     vim.cmd("%delete")
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
@@ -459,9 +447,7 @@ test2
 
     vim.fn.setline(1, "")
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
@@ -487,9 +473,7 @@ test2
 
     vim.cmd("%delete")
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
@@ -521,9 +505,7 @@ test4
     vim.api.nvim_buf_set_lines(0, 0, 1, false, { "test2_1", "test2_2" })
     vim.api.nvim_buf_set_lines(0, 2, 3, false, { "test3_1", "test3_2" })
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
@@ -555,9 +537,7 @@ test4
 
     vim.cmd("1delete")
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
@@ -586,9 +566,7 @@ test3
 
     vim.cmd("1delete")
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
@@ -614,9 +592,7 @@ test3
     local union_bufnr = vim.api.nvim_get_current_buf()
 
     vim.fn.setline(1, "edited_1")
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.tabedit()
     vim.cmd.buffer(bufnr1)
@@ -628,9 +604,7 @@ $]])
 
     vim.cmd.buffer(union_bufnr)
     vim.fn.setline(1, "edited_2")
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
@@ -702,15 +676,11 @@ test1
 
     vim.fn.setline(1, "edited_1")
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.undo({ mods = { silent = true } })
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
@@ -739,9 +709,7 @@ test3
 
     vim.cmd("%delete")
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.undo({ mods = { silent = true } })
 
@@ -782,9 +750,7 @@ test2_3
 
     vim.cmd("3delete")
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
     assert.exists_pattern([[
 ^test1_1
 test1_3
@@ -792,9 +758,7 @@ $]])
 
     vim.cmd.undo({ mods = { silent = true } })
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
     assert.exists_pattern([[
 ^test1_1
 test1_3
@@ -842,9 +806,7 @@ test5
     unionbuf.open(entries)
 
     vim.cmd("2delete")
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
     assert.exists_pattern([[
 ^test1
 test5
@@ -853,26 +815,20 @@ $]])
     helper.break_undo() -- HACK: for testing
 
     vim.cmd("2delete")
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
     assert.exists_pattern([[
 ^test1
 $]])
 
     vim.cmd.undo({ mods = { silent = true } })
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
     assert.exists_pattern([[
 ^test1
 test5
 $]])
 
     vim.cmd.undo({ mods = { silent = true } })
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
     assert.exists_pattern([[
 ^test1
 test3
@@ -908,9 +864,7 @@ $]])
 
     vim.cmd.join()
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern("^test1 test2$")
@@ -934,9 +888,7 @@ test2]])
 
     vim.cmd("%delete")
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern("^test1$")
@@ -957,9 +909,7 @@ test2]])
 
     vim.api.nvim_buf_set_lines(0, 0, -1, false, { "edited" })
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
@@ -987,9 +937,7 @@ test2]])
 
     vim.fn.setline(2, "edited_2")
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
@@ -1027,9 +975,7 @@ test2_3]])
     vim.cmd("2,3delete")
     local union_bufnr = vim.api.nvim_get_current_buf()
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
     vim.cmd.tabedit()
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
@@ -1039,9 +985,7 @@ test1_4$]])
     vim.cmd.buffer(union_bufnr)
     vim.cmd.undo({ mods = { silent = true } })
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
@@ -1087,9 +1031,7 @@ test2_4]])
     vim.cmd("3,4delete")
     local union_bufnr = vim.api.nvim_get_current_buf()
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
     vim.cmd.tabedit()
     vim.cmd.buffer(bufnr2)
     assert.exists_pattern([[
@@ -1099,9 +1041,7 @@ test2_4$]])
     vim.cmd.buffer(union_bufnr)
     vim.cmd.undo({ mods = { silent = true } })
 
-    assert.lines_after(function()
-      vim.cmd.write()
-    end)
+    assert.lines_after_write()
 
     vim.cmd.buffer(bufnr1)
     assert.exists_pattern([[
