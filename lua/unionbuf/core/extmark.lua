@@ -26,7 +26,7 @@ function M.ranges(union_bufnr, range_end_row)
 
   local ranges = {}
   local last_range_index = 0
-  local extmarks = vim.api.nvim_buf_get_extmarks(union_bufnr, ns, 0, { range_end_row, -1 }, {})
+  local extmarks = vim.api.nvim_buf_get_extmarks(union_bufnr, ns, 0, { range_end_row or -1, -1 }, {})
   for i, extmark in ipairs(extmarks) do
     local start_row, end_row, is_deleted = to_row(extmark)
     local extmark_id = extmark[1]
