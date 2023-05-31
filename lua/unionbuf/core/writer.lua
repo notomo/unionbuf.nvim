@@ -6,7 +6,7 @@ local tracker_ns = vim.api.nvim_create_namespace("unionbuf_tracker")
 
 function M.write(union_bufnr, entry_map)
   local all_tracked_map = {}
-  local warns = {}
+  local warnings = {}
   local groups = M._buffer_grouped_ranges(union_bufnr, entry_map)
   for _, group in ipairs(groups) do
     local entry_bufnr, entry_pairs = unpack(group)
@@ -14,13 +14,15 @@ function M.write(union_bufnr, entry_map)
     local tracked_map = {}
     for _, pair in ipairs(entry_pairs) do
       local extmark_range = pair.extmark_range
-      local tracker_id, is_lines_before_deleted, warn = M._set_text(union_bufnr, extmark_range, pair.entry)
-      tracked_map[tracker_id] = {
-        extmark_range = extmark_range,
-        is_lines_before_deleted = is_lines_before_deleted,
-      }
-      if warn then
-        table.insert(warns, warn)
+      local tracker_id, is_lines_before_deleted, warning = M._set_text(union_bufnr, extmark_range, pair.entry)
+      if tracker_id then
+        tracked_map[tracker_id] = {
+          extmark_range = extmark_range,
+          is_lines_before_deleted = is_lines_before_deleted,
+        }
+      end
+      if warning then
+        table.insert(warnings, warning)
       end
     end
 
@@ -64,26 +66,38 @@ function M.write(union_bufnr, entry_map)
     vim.api.nvim_buf_clear_namespace(entry_bufnr, tracker_ns, 0, -1)
   end
 
-  if #warns > 0 then
-    return new_raw_entries, table.concat(warns, "\n")
+  if #warnings > 0 then
+    return new_raw_entries, table.concat(warnings, "\n")
   end
   return new_raw_entries, nil
 end
 
 function M._set_text(union_bufnr, extmark_range, entry)
-  local tracker_id = vim.api.nvim_buf_set_extmark(entry.bufnr, tracker_ns, entry.start_row, entry.start_col, {
+  local ok, result = pcall(vim.api.nvim_buf_set_extmark, entry.bufnr, tracker_ns, entry.start_row, entry.start_col, {
     end_row = entry.end_row,
     end_col = entry.end_col,
     right_gravity = entry.is_deleted,
     end_right_gravity = true,
   })
-
-  if entry:is_already_changed() then
-    local warn = ("[unionbuf] Original buffer(bufnr=%d, start_row=%d) has already changed."):format(
+  if not ok then
+    if not result:match("out of range") then
+      error(result)
+    end
+    local warning = ("[unionbuf] Original range (bufnr=%d, start_row=%d) has already been changed."):format(
       entry.bufnr,
       entry.start_row
     )
-    return tracker_id, entry.is_lines_before_deleted, warn
+    return nil, nil, warning
+  end
+  local tracker_id = result
+
+  if entry:is_already_changed() then
+    vim.api.nvim_buf_del_extmark(entry.bufnr, tracker_ns, tracker_id)
+    local warning = ("[unionbuf] Original text (bufnr=%d, start_row=%d) has already been changed."):format(
+      entry.bufnr,
+      entry.start_row
+    )
+    return nil, nil, warning
   end
 
   local lines

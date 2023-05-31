@@ -624,7 +624,7 @@ $]],
     )
   end)
 
-  it("notifies warning if original buffer has already changed on write", function()
+  it("notifies warning if original buffer text has already changed on write", function()
     local bufnr1 = helper.new_buffer([[
 test1
 ]])
@@ -648,7 +648,36 @@ test1
 
     vim.cmd.write()
 
-    assert.matches("already changed", notified_msg)
+    assert.matches("Original text .+ already been changed", notified_msg)
+    assert.equals(vim.log.levels.WARN, notified_level)
+  end)
+
+  it("notifies warning if original buffer range has already changed on write", function()
+    local bufnr1 = helper.new_buffer([[
+test1
+test2
+]])
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 1,
+      },
+    }
+    unionbuf.open(entries)
+
+    vim.api.nvim_buf_set_lines(bufnr1, 0, -1, false, {})
+
+    local notified_msg
+    local notified_level
+    vim.notify = function(msg, level)
+      notified_msg = msg
+      notified_level = level
+    end
+
+    vim.cmd.write()
+
+    assert.matches("Original range .+ already been changed", notified_msg)
     assert.equals(vim.log.levels.WARN, notified_level)
   end)
 
