@@ -106,9 +106,6 @@ function Entry.new(raw_entry)
 
   local start_row = raw_entry.start_row
   local end_row = raw_entry.end_row or raw_entry.start_row
-  if start_row > end_row and end_row >= 0 then
-    start_row, end_row = end_row, start_row
-  end
 
   local max_row = vim.api.nvim_buf_line_count(bufnr) - 1
   if not raw_entry.is_deleted and start_row > max_row then
@@ -126,9 +123,6 @@ function Entry.new(raw_entry)
     lines = {}
   else
     lines = vim.api.nvim_buf_get_text(bufnr, start_row, start_col, end_row, end_col, {})
-  end
-  if start_row == end_row and start_col > end_col and end_col >= 0 then
-    start_col, end_col = end_col, start_col
   end
 
   local original_end_col = end_col
