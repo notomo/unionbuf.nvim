@@ -1,14 +1,13 @@
 local M = {}
 
-local Entries = require("unionbuf.core.entries")
-
 local vim = vim
-local ns = Entries.ns
+
+M.ns = vim.api.nvim_create_namespace("unionbuf")
 
 function M.ranges(union_bufnr, range_end_row)
   local get_row_range = M._range_generator()
   local ranges = vim
-    .iter(vim.api.nvim_buf_get_extmarks(union_bufnr, ns, 0, { range_end_row or -1, -1 }, {}))
+    .iter(vim.api.nvim_buf_get_extmarks(union_bufnr, M.ns, 0, { range_end_row or -1, -1 }, {}))
     :map(function(extmark)
       local start_row, end_row, is_deleted = get_row_range(extmark)
       if is_deleted then

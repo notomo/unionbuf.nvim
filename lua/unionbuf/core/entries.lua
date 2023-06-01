@@ -2,8 +2,6 @@ local vim = vim
 
 local M = {}
 
-M.ns = vim.api.nvim_create_namespace("unionbuf")
-
 local Entry = {}
 Entry.__index = Entry
 

@@ -1,15 +1,14 @@
 local vim = vim
 local hl_groups = require("unionbuf.core.highlight_group")
-local Entries = require("unionbuf.core.entries")
 
 local M = {}
 
-local ns = Entries.ns
+local ns = require("unionbuf.core.extmark").ns
 
 function M.read(union_bufnr, entries)
   vim.api.nvim_buf_clear_namespace(union_bufnr, ns, 0, -1)
 
-  local entries_lines = Entries.lines(entries)
+  local entries_lines = require("unionbuf.core.entries").lines(entries)
   local current_lines = vim.api.nvim_buf_get_lines(union_bufnr, 0, -1, false)
   if not vim.deep_equal(entries_lines, current_lines) then
     vim.api.nvim_buf_set_lines(union_bufnr, 0, -1, false, entries_lines)
