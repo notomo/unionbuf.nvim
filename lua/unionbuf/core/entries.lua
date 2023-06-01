@@ -43,7 +43,7 @@ function M._new(raw_entries)
     end
   end
   if #errs > 0 then
-    return entries, "[unionbuf] Invalid entries: \n" .. table.concat(errs, "\n")
+    return entries, "[unionbuf] Invalid entries:\n" .. table.concat(errs, "\n")
   end
   return entries, nil
 end
@@ -106,7 +106,6 @@ function Entry.new(raw_entry)
 
   local start_row = raw_entry.start_row
   local end_row = raw_entry.end_row or raw_entry.start_row
-
   local max_row = vim.api.nvim_buf_line_count(bufnr) - 1
   if not raw_entry.is_deleted and start_row > max_row then
     return nil, ("- Buffer=%d : start_row = %d is out of range. (max_row = %d)"):format(bufnr, start_row, max_row)
@@ -118,12 +117,7 @@ function Entry.new(raw_entry)
   local start_col = raw_entry.start_col or 0
   local end_col = raw_entry.end_col or -1
   local is_deleted = raw_entry.is_deleted or false
-  local lines
-  if is_deleted then
-    lines = {}
-  else
-    lines = vim.api.nvim_buf_get_text(bufnr, start_row, start_col, end_row, end_col, {})
-  end
+  local lines = M._lines(bufnr, start_row, start_col, end_row, end_col, is_deleted)
 
   local original_end_col = end_col
   if end_col == -1 then
@@ -147,10 +141,7 @@ function Entry.new(raw_entry)
 end
 
 function Entry.is_already_changed(self)
-  if self.is_deleted then
-    return not vim.deep_equal({}, self.lines)
-  end
-  local lines = vim.api.nvim_buf_get_text(self.bufnr, self.start_row, self.start_col, self.end_row, self.end_col, {})
+  local lines = M._lines(self.bufnr, self.start_row, self.start_col, self.end_row, self.end_col, self.is_deleted)
   return not vim.deep_equal(lines, self.lines)
 end
 
@@ -188,6 +179,13 @@ function M.lines(entries)
     vim.list_extend(t, entry.lines)
     return t
   end)
+end
+
+function M._lines(bufnr, start_row, start_col, end_row, end_col, is_deleted)
+  if is_deleted then
+    return {}
+  end
+  return vim.api.nvim_buf_get_text(bufnr, start_row, start_col, end_row, end_col, {})
 end
 
 return M
