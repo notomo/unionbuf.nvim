@@ -1,8 +1,11 @@
 local setup_highlight_groups = function()
   local highlightlib = require("unionbuf.vendor.misclib.highlight")
   return {
+    --used for background on odd line
     UnionbufBackgroundOdd = highlightlib.link("UnionbufBackgroundOdd", "Normal"),
+    --used for background on even line
     UnionbufBackgroundEven = highlightlib.link("UnionbufBackgroundEven", "NormalFloat"),
+    --used for text to show no entries
     UnionbufNoEntries = highlightlib.link("UnionbufNoEntries", "Comment"),
   }
 end

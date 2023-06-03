@@ -27,6 +27,18 @@ UnionbufOpenOption                                        *UnionbufOpenOption*
 - {open} (fun(bufnr:integer)?) open window function using argument buffer number
 
 ==============================================================================
+HIGHLIGHT GROUPS                              *unionbuf.nvim-HIGHLIGHT-GROUPS*
+
+UnionbufBackgroundOdd                               *hl-UnionbufBackgroundOdd*
+  used for background on odd line
+
+UnionbufBackgroundEven                             *hl-UnionbufBackgroundEven*
+  used for background on even line
+
+UnionbufNoEntries                                       *hl-UnionbufNoEntries*
+  used for text to show no entries
+
+==============================================================================
 EXAMPLES                                              *unionbuf.nvim-EXAMPLES*
 
 >
