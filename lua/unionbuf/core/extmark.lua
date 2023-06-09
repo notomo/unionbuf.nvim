@@ -32,17 +32,16 @@ function M.ranges(union_bufnr, range_end_row)
   end)
   if last_valid_range then
     last_valid_range.end_row = vim.api.nvim_buf_line_count(union_bufnr) - 1
-  elseif #ranges > 0 then
-    if require("unionbuf.lib.buffer").has_content(union_bufnr) then
-      ranges[#ranges] = {
-        extmark_id = ranges[#ranges].extmark_id,
-        is_deleted = false,
-        start_row = 0,
-        start_col = 0,
-        end_row = vim.api.nvim_buf_line_count(union_bufnr) - 1,
-        end_col = -1,
-      }
-    end
+  elseif #ranges > 0 and require("unionbuf.lib.buffer").has_content(union_bufnr) then
+    -- for api that moves extmarks like nvim_buf_get_lines()
+    ranges[#ranges] = {
+      extmark_id = ranges[#ranges].extmark_id,
+      is_deleted = false,
+      start_row = 0,
+      start_col = 0,
+      end_row = vim.api.nvim_buf_line_count(union_bufnr) - 1,
+      end_col = -1,
+    }
   end
 
   return ranges
