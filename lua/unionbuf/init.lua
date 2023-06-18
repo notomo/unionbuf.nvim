@@ -1,6 +1,6 @@
 local M = {}
 
---- @class UnionbufEntry
+--- @class UnionbufEntryParam
 --- @field start_row integer first line (inclusive, 0-base index)
 --- @field start_col integer? first column (inclusive, 0-base index)
 --- @field end_row integer? last line (inclusive, 0-base index)
@@ -23,10 +23,28 @@ local M = {}
 ---
 --- WARNING:
 --- - Moving extmark operation like nvim_buf_set_lines() can break entries.
---- @param entries UnionbufEntry[]: |UnionbufEntry|
+--- @param entries UnionbufEntryParam[]: |UnionbufEntryParam|
 --- @param opts UnionbufOpenOption?: |UnionbufOpenOption|
 function M.open(entries, opts)
   return require("unionbuf.command").open(entries, opts)
+end
+
+--- @class UnionbufEntry
+--- @field start_row integer first line (inclusive, 0-base index)
+--- @field start_col integer first column (inclusive, 0-base index)
+--- @field end_row integer last line (inclusive, 0-base index)
+--- @field end_col integer last column (inclusive, 0-base index)
+--- @field bufnr integer buffer number
+
+--- @class UnionbufGetEntryOption
+--- @field bufnr integer? buffer number
+--- @field row integer? (inclusive, 0-base index)
+
+--- Returns an entry on the unionbuf buffer.
+--- @param opts UnionbufGetEntryOption?: |UnionbufGetEntryOption|
+--- @return UnionbufEntry?
+function M.get_entry(opts)
+  return require("unionbuf.command").get_entry(opts)
 end
 
 return M

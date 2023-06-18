@@ -1112,3 +1112,62 @@ test2_4$]],
     )
   end)
 end)
+
+describe("unionbuf.get_entry()", function()
+  before_each(helper.before_each)
+  after_each(helper.after_each)
+
+  it("returns the entry in the cursor position", function()
+    local bufnr1 = helper.new_buffer([[
+test1
+test2
+test3
+]])
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 2,
+      },
+    }
+    unionbuf.open(entries)
+
+    local got = unionbuf.get_entry()
+
+    assert.is_same({
+      start_row = 2,
+      end_row = 2,
+      start_col = 0,
+      end_col = 5,
+      bufnr = bufnr1,
+    }, got)
+  end)
+
+  it("can specify a row", function()
+    local bufnr1 = helper.new_buffer([[test1]])
+
+    local bufnr2 = helper.new_buffer([[test2]])
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+      },
+      {
+        bufnr = bufnr2,
+        start_row = 0,
+      },
+    }
+    unionbuf.open(entries)
+
+    local got = unionbuf.get_entry({ row = 1 })
+
+    assert.is_same({
+      start_row = 0,
+      end_row = 0,
+      start_col = 0,
+      end_col = 5,
+      bufnr = bufnr2,
+    }, got)
+  end)
+end)

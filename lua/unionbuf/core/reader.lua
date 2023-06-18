@@ -29,6 +29,24 @@ function M.read(union_bufnr, entries)
   return entry_map
 end
 
+function M.get(bufnr, entry_map, row)
+  local extmarks = vim.api.nvim_buf_get_extmarks(bufnr, ns, { row, -1 }, -1, {})
+  for _, extmark in ipairs(extmarks) do
+    local extmark_id = extmark[1]
+    local entry = entry_map[extmark_id]
+    if entry and not entry.is_deleted then
+      return {
+        bufnr = entry.bufnr,
+        start_row = entry.start_row,
+        end_row = entry.end_row,
+        start_col = entry.start_col,
+        end_col = entry.end_col,
+      }
+    end
+  end
+  return nil
+end
+
 local decoration_ns = vim.api.nvim_create_namespace("unionbuf_decoration")
 vim.api.nvim_set_decoration_provider(decoration_ns, {})
 vim.api.nvim_set_decoration_provider(decoration_ns, {

@@ -18,13 +18,22 @@ open({entries}, {opts})                                      *unionbuf.open()*
   - Moving extmark operation like nvim_buf_set_lines() can break entries.
 
   Parameters: ~
-    {entries} (UnionbufEntry[]) |UnionbufEntry|
+    {entries} (UnionbufEntryParam[]) |UnionbufEntryParam|
     {opts} (UnionbufOpenOption?) |UnionbufOpenOption|
+
+get_entry({opts})                                       *unionbuf.get_entry()*
+  Returns an entry on the unionbuf buffer.
+
+  Parameters: ~
+    {opts} (UnionbufGetEntryOption?) |UnionbufGetEntryOption|
+
+  Return: ~
+    (UnionbufEntry?) 
 
 ==============================================================================
 STRUCTURE                                            *unionbuf.nvim-STRUCTURE*
 
-UnionbufEntry                                                  *UnionbufEntry*
+UnionbufEntryParam                                        *UnionbufEntryParam*
 
 - {start_row} (integer) first line (inclusive, 0-base index)
 - {start_col} (integer?) first column (inclusive, 0-base index)
@@ -36,6 +45,19 @@ UnionbufEntry                                                  *UnionbufEntry*
 UnionbufOpenOption                                        *UnionbufOpenOption*
 
 - {open} (fun(bufnr:integer)?) open window function using argument buffer number
+
+UnionbufEntry                                                  *UnionbufEntry*
+
+- {start_row} (integer) first line (inclusive, 0-base index)
+- {start_col} (integer) first column (inclusive, 0-base index)
+- {end_row} (integer) last line (inclusive, 0-base index)
+- {end_col} (integer) last column (inclusive, 0-base index)
+- {bufnr} (integer) buffer number
+
+UnionbufGetEntryOption                                *UnionbufGetEntryOption*
+
+- {bufnr} (integer?) buffer number
+- {row} (integer?) (inclusive, 0-base index)
 
 ==============================================================================
 HIGHLIGHT GROUPS                              *unionbuf.nvim-HIGHLIGHT-GROUPS*
