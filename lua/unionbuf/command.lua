@@ -19,6 +19,7 @@ function M.open(raw_entries, raw_opts)
 
   vim.api.nvim_create_autocmd({ "BufReadCmd" }, {
     buffer = bufnr,
+    nested = true,
     callback = function()
       local new_entries, warn = require("unionbuf.core.entries").new(raw_entries)
       if warn then
@@ -30,6 +31,7 @@ function M.open(raw_entries, raw_opts)
 
   vim.api.nvim_create_autocmd({ "BufWriteCmd" }, {
     buffer = bufnr,
+    nested = true,
     callback = function()
       local entry_map = buffer_entry_maps[bufnr]
       local new_raw_entries, write_warn = require("unionbuf.core.writer").write(bufnr, entry_map)
