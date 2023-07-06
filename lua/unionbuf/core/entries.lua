@@ -106,10 +106,10 @@ function Entry.new(raw_entry)
   local end_row = raw_entry.end_row or raw_entry.start_row
   local max_row = vim.api.nvim_buf_line_count(bufnr) - 1
   if not raw_entry.is_deleted and start_row > max_row then
-    return nil, ("- Buffer=%d : start_row = %d is out of range. (max_row = %d)"):format(bufnr, start_row, max_row)
+    start_row = max_row
   end
   if not raw_entry.is_deleted and end_row > max_row then
-    return nil, ("- Buffer=%d : end_row = %d is out of range. (max_row = %d)"):format(bufnr, end_row, max_row)
+    end_row = max_row
   end
 
   local start_col = raw_entry.start_col or 0

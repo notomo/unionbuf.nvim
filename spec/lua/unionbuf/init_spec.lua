@@ -198,24 +198,29 @@ test2
     assert.match("the buffer is invalid", err)
   end)
 
-  it("raises error if row positions are out of range", function()
+  it("narrows out of range rows", function()
     local bufnr1 = helper.new_buffer([[
-test]])
+test1_1]])
 
-    local ok, err = pcall(unionbuf.open, {
+    local bufnr2 = helper.new_buffer([[
+test2_1
+test2_2]])
+
+    unionbuf.open({
       {
         bufnr = bufnr1,
         start_row = 1,
       },
       {
-        bufnr = bufnr1,
-        start_row = 0,
-        end_row = 1,
+        bufnr = bufnr2,
+        start_row = 3,
+        end_row = 4,
       },
     })
-    assert.is_false(ok)
-    assert.match("start_row = %d is out of range", err)
-    assert.match("end_row = %d is out of range", err)
+
+    assert.exists_pattern([[
+^test1_1
+test2_2$]])
   end)
 end)
 
