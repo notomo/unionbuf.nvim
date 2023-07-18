@@ -48,6 +48,7 @@ function M.get(bufnr, entry_map, row)
 end
 
 local decoration_ns = vim.api.nvim_create_namespace("unionbuf_decoration")
+local priority = vim.highlight.priorities.user - 1
 vim.api.nvim_set_decoration_provider(decoration_ns, {})
 vim.api.nvim_set_decoration_provider(decoration_ns, {
   on_buf = function(_, bufnr)
@@ -81,6 +82,7 @@ vim.api.nvim_set_decoration_provider(decoration_ns, {
       vim.api.nvim_buf_set_extmark(bufnr, decoration_ns, extmark_range.start_row, 0, {
         end_col = 0,
         end_row = extmark_range.end_row + 1,
+        priority = priority,
         hl_eol = true,
         hl_group = count % 2 == 0 and hl_groups.UnionbufBackgroundEven or hl_groups.UnionbufBackgroundOdd,
         ephemeral = true,
