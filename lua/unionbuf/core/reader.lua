@@ -8,6 +8,11 @@ local ns = require("unionbuf.core.extmark").ns
 function M.read(union_bufnr, entries)
   vim.api.nvim_buf_clear_namespace(union_bufnr, ns, 0, -1)
 
+  local first_bufnr = (entries[1] or {}).bufnr
+  if first_bufnr then
+    vim.bo[union_bufnr].expandtab = vim.bo[first_bufnr].expandtab
+  end
+
   local entries_lines = require("unionbuf.core.entries").lines(entries)
   local current_lines = vim.api.nvim_buf_get_lines(union_bufnr, 0, -1, false)
   if not vim.deep_equal(entries_lines, current_lines) then

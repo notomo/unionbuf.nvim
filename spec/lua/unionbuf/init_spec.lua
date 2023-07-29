@@ -1116,6 +1116,24 @@ test2_4$]],
       bufnr2
     )
   end)
+
+  it("inherits the first buffer's expandtab option value", function()
+    local bufnr1 = helper.new_buffer([[
+test1
+]])
+    vim.bo[bufnr1].expandtab = true
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+        end_row = 0,
+      },
+    }
+    unionbuf.open(entries)
+
+    assert.is_true(vim.bo.expandtab)
+  end)
 end)
 
 describe("unionbuf.get_entry()", function()
