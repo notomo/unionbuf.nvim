@@ -1,7 +1,5 @@
 # unionbuf.nvim
 
-WIP
-
 unionbuf.nvim is a neovim plugin to edit multiple buffers in one buffer.
 
 Inspired by [vim-qfreplace](https://github.com/thinca/vim-qfreplace).
