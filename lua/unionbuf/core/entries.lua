@@ -101,6 +101,12 @@ function Entry.new(raw_entry)
   if not vim.api.nvim_buf_is_valid(bufnr) then
     return nil, ("- Buffer=%d : the buffer is invalid"):format(bufnr)
   end
+  if vim.bo[bufnr].buftype == "" and not vim.bo[bufnr].modified then
+    -- to sync buffer with file
+    vim.api.nvim_buf_call(bufnr, function()
+      vim.cmd.edit()
+    end)
+  end
 
   local start_row = raw_entry.start_row
   local end_row = raw_entry.end_row or raw_entry.start_row

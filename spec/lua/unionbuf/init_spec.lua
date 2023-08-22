@@ -222,6 +222,30 @@ test2_2]])
 ^test1_1
 test2_2$]])
   end)
+
+  it("reloads buffers", function()
+    local path = helper.test_data:create_file(
+      "test.txt",
+      [[
+test1
+]]
+    )
+    vim.cmd.edit(path)
+    vim.cmd.tabedit()
+    vim.cmd.tabonly()
+    vim.fn.system("echo edited > " .. path)
+
+    local entries = {
+      {
+        path = path,
+        start_row = 0,
+      },
+    }
+    unionbuf.open(entries)
+
+    assert.exists_pattern([[
+^edited$]])
+  end)
 end)
 
 describe("unionbuf buffer", function()
