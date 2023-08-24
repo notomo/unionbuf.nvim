@@ -50,6 +50,9 @@ function M.write(union_bufnr, entry_map)
       .iter(tracker_extmarks)
       :map(function(extmark)
         local tracked = tracked_map[extmark[1]]
+        if not tracked then
+          return nil
+        end
         return {
           bufnr = entry_bufnr,
           start_row = extmark[2],
