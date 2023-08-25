@@ -1218,3 +1218,50 @@ test3
     }, got)
   end)
 end)
+
+describe("unionbuf.shift()", function()
+  before_each(helper.before_each)
+  after_each(helper.after_each)
+
+  it("can shift entry range", function()
+    local bufnr1 = helper.new_buffer([[
+test1_1
+test1_2
+test1_3
+test1_4]])
+
+    local bufnr2 = helper.new_buffer([[
+test2_1
+test2_2
+test2_3
+test2_4]])
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 2,
+      },
+      {
+        bufnr = bufnr2,
+        start_row = 1,
+        end_row = 2,
+      },
+    }
+    unionbuf.open(entries)
+
+    vim.cmd.normal("j")
+
+    assert.exists_pattern([[
+^test1_3
+test2_2
+test2_3$]])
+
+    unionbuf.shift({ start_row = -1, end_row = 1 })
+
+    assert.exists_pattern([[
+^test1_3
+test2_1
+test2_2
+test2_3$]])
+  end)
+end)

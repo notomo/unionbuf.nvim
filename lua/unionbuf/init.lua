@@ -47,4 +47,9 @@ function M.get_entry(opts)
   return require("unionbuf.command").get_entry(opts)
 end
 
+-- TODO
+function M.shift(offsets, opts)
+  return require("unionbuf.command").shift(offsets, opts)
+end
+
 return M

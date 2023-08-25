@@ -67,6 +67,29 @@ function M.get_entry(raw_opts)
   return require("unionbuf.core.reader").get(opts.bufnr, entry_map, opts.row)
 end
 
+local default_offsets = {
+  start_row = 0,
+  end_row = 0,
+}
+function M.shift(raw_offsets, raw_opts)
+  local offsets = vim.tbl_deep_extend("force", default_offsets, raw_offsets)
+  local opts = require("unionbuf.core.option").new_shift_opts(raw_opts)
+
+  local bufnr = opts.bufnr
+  local entry_map = buffer_entry_maps[bufnr]
+  if not entry_map then
+    error("not found entries in buffer=" .. tostring(bufnr))
+  end
+
+  local raw_entries = require("unionbuf.core.reader").shift(bufnr, entry_map, opts.start_row, opts.end_row, offsets)
+  buffer_raw_entries[bufnr] = raw_entries
+
+  local err = M._read(bufnr)
+  if err then
+    error(err)
+  end
+end
+
 function M._read(bufnr)
   local entries, err = require("unionbuf.core.entries").new(buffer_raw_entries[bufnr])
   if err then

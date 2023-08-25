@@ -52,6 +52,72 @@ function M.get(bufnr, entry_map, row)
   return nil
 end
 
+function M.shift(bufnr, entry_map, start_row, end_row, offsets)
+  local extmarks = vim.api.nvim_buf_get_extmarks(bufnr, ns, 0, -1, {})
+  local entry_pairs = vim
+    .iter(extmarks)
+    :map(function(extmark)
+      local extmark_id = extmark[1]
+      local entry = entry_map[extmark_id]
+      if not entry then
+        return nil
+      end
+      return {
+        extmark = extmark,
+        entry = entry,
+      }
+    end)
+    :totable()
+
+  local start_index = #entry_pairs
+  for i, pair in ipairs(entry_pairs) do
+    local row = pair.extmark[2]
+    if start_row < row then
+      start_index = i
+      break
+    end
+  end
+
+  local end_index = #entry_pairs
+  for i, pair in ipairs(entry_pairs) do
+    local row = pair.extmark[2]
+    if end_row < row then
+      end_index = i
+      break
+    end
+  end
+
+  local entries = vim
+    .iter(entry_pairs)
+    :map(function(pair)
+      return pair.entry
+    end)
+    :totable()
+
+  local new_raw_entries = {}
+
+  local start_side_part = vim.list_slice(entries, 1, start_index - 1)
+  vim.list_extend(new_raw_entries, start_side_part)
+
+  local modified_part = vim
+    .iter(vim.list_slice(entries, start_index, end_index))
+    :map(function(entry)
+      if entry.is_deleted then
+        return entry
+      end
+      entry.start_row = entry.start_row + offsets.start_row
+      entry.end_row = entry.end_row + offsets.end_row
+      return entry
+    end)
+    :totable()
+  vim.list_extend(new_raw_entries, modified_part)
+
+  local end_side_part = vim.list_slice(entries, end_index + 1)
+  vim.list_extend(new_raw_entries, end_side_part)
+
+  return new_raw_entries
+end
+
 local decoration_ns = vim.api.nvim_create_namespace("unionbuf_decoration")
 local priority = vim.highlight.priorities.user - 1
 vim.api.nvim_set_decoration_provider(decoration_ns, {})
