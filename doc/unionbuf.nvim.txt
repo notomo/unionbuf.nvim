@@ -30,6 +30,13 @@ get_entry({opts})                                       *unionbuf.get_entry()*
   Return: ~
     (UnionbufEntry?) 
 
+shift({offsets}, {opts})                                    *unionbuf.shift()*
+  Shifts entries.
+
+  Parameters: ~
+    {offsets} (UnionbufOffsets) |UnionbufOffsets|
+    {opts} (UnionbufShiftOption?) |UnionbufShiftOption|
+
 ==============================================================================
 STRUCTURE                                            *unionbuf.nvim-STRUCTURE*
 
@@ -58,6 +65,17 @@ UnionbufGetEntryOption                                *UnionbufGetEntryOption*
 
 - {bufnr} (integer?) buffer number
 - {row} (integer?) (inclusive, 0-base index)
+
+UnionbufOffsets                                              *UnionbufOffsets*
+
+- {start_row} (integer?) entry range's start row offest (default: 0)
+- {end_row} (integer?) entry range's end row offest (default: 0)
+
+UnionbufShiftOption                                      *UnionbufShiftOption*
+
+- {bufnr} (integer?) buffer number
+- {start_row} (integer?) target range start row in unionbuf buffer (inclusive, 0-base index, default: current cursor row)
+- {end_row} (integer?) target range end row in unionbuf buffer (inclusive, 0-base index, default: current cursor row)
 
 ==============================================================================
 HIGHLIGHT GROUPS                              *unionbuf.nvim-HIGHLIGHT-GROUPS*

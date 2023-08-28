@@ -47,9 +47,20 @@ function M.get_entry(opts)
   return require("unionbuf.command").get_entry(opts)
 end
 
--- TODO
+--- @class UnionbufOffsets
+--- @field start_row integer? entry range's start row offest (default: 0)
+--- @field end_row integer? entry range's end row offest (default: 0)
+
+--- @class UnionbufShiftOption
+--- @field bufnr integer? buffer number
+--- @field start_row integer? target range start row in unionbuf buffer (inclusive, 0-base index, default: current cursor row)
+--- @field end_row integer? target range end row in unionbuf buffer (inclusive, 0-base index, default: current cursor row)
+
+--- Shifts entries.
+--- @param offsets UnionbufOffsets: |UnionbufOffsets|
+--- @param opts UnionbufShiftOption?: |UnionbufShiftOption|
 function M.shift(offsets, opts)
-  return require("unionbuf.command").shift(offsets, opts)
+  require("unionbuf.command").shift(offsets, opts)
 end
 
 return M
