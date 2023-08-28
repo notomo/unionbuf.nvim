@@ -1264,4 +1264,92 @@ test2_1
 test2_2
 test2_3$]])
   end)
+
+  it("does nothing if the content is top of the buffer", function()
+    local bufnr1 = helper.new_buffer([[
+test1_1
+test1_2]])
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+      },
+    }
+    unionbuf.open(entries)
+
+    assert.exists_pattern([[
+^test1_1$]])
+
+    unionbuf.shift({ start_row = -1 })
+
+    assert.exists_pattern([[
+^test1_1$]])
+  end)
+
+  it("does nothing if the content is bottom of the buffer", function()
+    local bufnr1 = helper.new_buffer([[
+test1_1
+test1_2]])
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 1,
+      },
+    }
+    unionbuf.open(entries)
+
+    assert.exists_pattern([[
+^test1_2$]])
+
+    unionbuf.shift({ end_row = 1 })
+
+    assert.exists_pattern([[
+^test1_2$]])
+  end)
+
+  it("does not delete the entry by start_row positive offset", function()
+    local bufnr1 = helper.new_buffer([[
+test1_1
+test1_2]])
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 0,
+      },
+    }
+    unionbuf.open(entries)
+
+    assert.exists_pattern([[
+^test1_1$]])
+
+    unionbuf.shift({ start_row = 1 })
+
+    assert.exists_pattern([[
+^test1_2$]])
+  end)
+
+  it("does not delete the entry by end_row negative offset", function()
+    local bufnr1 = helper.new_buffer([[
+test1_1
+test1_2]])
+
+    local entries = {
+      {
+        bufnr = bufnr1,
+        start_row = 1,
+      },
+    }
+    unionbuf.open(entries)
+
+    assert.exists_pattern([[
+^test1_2$]])
+
+    unionbuf.shift({ end_row = -1 })
+
+    assert.exists_pattern([[
+^test1_2$]])
+  end)
 end)
