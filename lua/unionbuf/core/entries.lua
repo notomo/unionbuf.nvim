@@ -6,15 +6,17 @@ local Entry = {}
 Entry.__index = Entry
 
 function M.new(raw_entries)
-  local entries, err = M._new(raw_entries)
+  local resolved, err = require("unionbuf.core.buffer_resolver").resolve(raw_entries)
   if err then
-    return entries, err
+    return nil, err
   end
 
-  local sorted = {}
+  local entries = M._new(raw_entries, resolved)
   local groups = require("unionbuf.vendor.misclib.collection.list").group_by(entries, function(entry)
     return entry.bufnr
   end)
+
+  local sorted = {}
   for _, group in ipairs(groups) do
     local _, buffer_entries = unpack(group)
     table.sort(buffer_entries, function(a, b)
@@ -23,30 +25,21 @@ function M.new(raw_entries)
       end
       return a.start_row < b.start_row
     end)
-    vim.list_extend(sorted, M._merge(buffer_entries))
+    vim.list_extend(sorted, M._merge(buffer_entries, resolved))
   end
-
   return sorted, nil
 end
 
-function M._new(raw_entries)
+function M._new(raw_entries, resolved)
   local entries = {}
-  local errs = {}
   for _, raw_entry in ipairs(raw_entries) do
-    local entry, err = Entry.new(raw_entry)
-    if err then
-      table.insert(errs, err)
-    else
-      table.insert(entries, entry)
-    end
+    local entry = Entry.new(raw_entry, resolved)
+    table.insert(entries, entry)
   end
-  if #errs > 0 then
-    return entries, "[unionbuf] Invalid entries:\n" .. table.concat(errs, "\n")
-  end
-  return entries, nil
+  return entries
 end
 
-function M._merge(entries)
+function M._merge(entries, resolved)
   local raw_entries = { entries[1] }
   local index = 1
   for entry in vim.iter(entries):skip(1) do
@@ -59,12 +52,7 @@ function M._merge(entries)
       index = index + 1
     end
   end
-
-  local new_entries, err = M._new(raw_entries)
-  if err then
-    error(err)
-  end
-  return new_entries
+  return M._new(raw_entries, resolved)
 end
 
 function M._merge_one(entry, next_entry)
@@ -92,25 +80,15 @@ function M._merge_one(entry, next_entry)
   }
 end
 
-function Entry.new(raw_entry)
+function Entry.new(raw_entry, resolved)
   local bufnr = raw_entry.bufnr
   if not bufnr then
-    bufnr = vim.fn.bufadd(raw_entry.path)
-    vim.fn.bufload(bufnr)
-  end
-  if not vim.api.nvim_buf_is_valid(bufnr) then
-    return nil, ("- Buffer=%d : the buffer is invalid"):format(bufnr)
-  end
-  if vim.bo[bufnr].buftype == "" and not vim.bo[bufnr].modified then
-    -- to sync buffer with file
-    vim.api.nvim_buf_call(bufnr, function()
-      vim.cmd.edit()
-    end)
+    bufnr = resolved.path_to_bufnr[raw_entry.path]
   end
 
   local start_row = raw_entry.start_row
   local end_row = raw_entry.end_row or raw_entry.start_row
-  local max_row = vim.api.nvim_buf_line_count(bufnr) - 1
+  local max_row = resolved.bufnr_to_info[bufnr].max_row
   if not raw_entry.is_deleted and start_row > max_row then
     start_row = max_row
   end
