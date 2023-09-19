@@ -127,12 +127,14 @@ vim.api.nvim_set_decoration_provider(decoration_ns, {
   on_buf = function(_, bufnr)
     return vim.bo[bufnr].filetype == "unionbuf"
   end,
-  on_win = function(_, _, bufnr, topline, botline_guess)
+  on_win = function(_, window_id, bufnr, topline, botline_guess)
     if vim.bo[bufnr].filetype ~= "unionbuf" then
       return false
     end
+    local height = vim.api.nvim_win_get_height(window_id)
     local extmark_ranges = vim
-      .iter(require("unionbuf.core.extmark").ranges(bufnr, botline_guess))
+      -- NOTE: +height is workaround for robust odd/even highlight
+      .iter(require("unionbuf.core.extmark").ranges(bufnr, botline_guess + height))
       :filter(function(extmark_range)
         return not extmark_range.is_deleted
       end)
