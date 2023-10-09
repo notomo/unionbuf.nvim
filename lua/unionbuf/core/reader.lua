@@ -107,7 +107,9 @@ function M.shift(bufnr, entry_map, start_row, end_row, offsets)
       end
 
       entry.start_row = math.max(0, entry.start_row + offsets.start_row)
+      entry.start_col = 0
       entry.end_row = math.max(entry.start_row, entry.end_row + offsets.end_row)
+      entry.end_col = -1
 
       return entry
     end)
