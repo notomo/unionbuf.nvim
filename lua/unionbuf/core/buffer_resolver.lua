@@ -13,9 +13,9 @@ function M.resolve(raw_entries)
   local path_to_bufnr = {}
   local bufnr_to_info = {}
   local errs = {}
-  vim.iter(keys):each(function(key, is_path)
+  vim.iter(vim.tbl_keys(keys)):each(function(key)
     local bufnr
-    if is_path then
+    if keys[key] then
       bufnr = vim.fn.bufadd(key)
       vim.fn.bufload(bufnr)
       path_to_bufnr[key] = bufnr
