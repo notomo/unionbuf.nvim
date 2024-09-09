@@ -1,5 +1,6 @@
 local helper = require("unionbuf.test.helper")
 local unionbuf = helper.require("unionbuf")
+local assert = helper.typed_assert(assert)
 
 describe("unionbuf.open()", function()
   before_each(helper.before_each)
@@ -670,6 +671,7 @@ test1
 
     local notified_msg
     local notified_level
+    ---@diagnostic disable-next-line: duplicate-set-field
     vim.notify = function(msg, level)
       notified_msg = msg
       notified_level = level
@@ -677,8 +679,8 @@ test1
 
     vim.cmd.write()
 
-    assert.matches("Original text .+ already been changed", notified_msg)
-    assert.equals(vim.log.levels.WARN, notified_level)
+    assert.match("Original text .+ already been changed", notified_msg)
+    assert.equal(vim.log.levels.WARN, notified_level)
   end)
 
   it("notifies warning if original buffer range has already changed on write", function()
@@ -699,6 +701,7 @@ test2
 
     local notified_msg
     local notified_level
+    ---@diagnostic disable-next-line: duplicate-set-field
     vim.notify = function(msg, level)
       notified_msg = msg
       notified_level = level
@@ -706,8 +709,8 @@ test2
 
     vim.cmd.write()
 
-    assert.matches("Original range .+ already been changed", notified_msg)
-    assert.equals(vim.log.levels.WARN, notified_level)
+    assert.match("Original range .+ already been changed", notified_msg)
+    assert.equal(vim.log.levels.WARN, notified_level)
   end)
 
   it("cannot undo right after open", function()
@@ -1181,7 +1184,7 @@ test3
 
     local got = unionbuf.get_entry()
 
-    assert.is_same({
+    assert.same({
       start_row = 2,
       end_row = 2,
       start_col = 0,
@@ -1209,7 +1212,7 @@ test3
 
     local got = unionbuf.get_entry({ row = 1 })
 
-    assert.is_same({
+    assert.same({
       start_row = 0,
       end_row = 0,
       start_col = 0,

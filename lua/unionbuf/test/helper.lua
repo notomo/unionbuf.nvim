@@ -52,4 +52,10 @@ After lines:
   end
 end)
 
+function helper.typed_assert(assert)
+  local x = require("assertlib").typed(assert)
+  ---@cast x +{lines_after_write:fun()}
+  return x
+end
+
 return helper
