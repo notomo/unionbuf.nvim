@@ -83,7 +83,7 @@ function M._set_text(union_bufnr, extmark_range, entry)
     end_right_gravity = true,
   })
   if not ok then
-    if not result:match("out of range") then
+    if type(result) == "string" and not result:match("out of range") then
       error(result)
     end
     local warning = ("[unionbuf] Original range (bufnr=%d, start_row=%d) has already been changed."):format(
