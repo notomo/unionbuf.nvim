@@ -9,7 +9,6 @@ local default_open_opts = {
   end,
 }
 function M.new_open_opts(raw_opts)
-  vim.validate({ raw_opts = { raw_opts, "table", true } })
   raw_opts = raw_opts or {}
   return vim.tbl_deep_extend("force", default_open_opts, raw_opts)
 end
@@ -19,7 +18,6 @@ local default_get_entry_opts = {
   bufnr = 0,
 }
 function M.new_get_entry_opts(raw_opts)
-  vim.validate({ raw_opts = { raw_opts, "table", true } })
   raw_opts = raw_opts or {}
   local opts = vim.tbl_deep_extend("force", default_get_entry_opts, raw_opts)
   if opts.bufnr == 0 then
@@ -37,7 +35,6 @@ local default_shift_opts = {
   end_row = nil,
 }
 function M.new_shift_opts(raw_opts)
-  vim.validate({ raw_opts = { raw_opts, "table", true } })
   raw_opts = raw_opts or {}
   local opts = vim.tbl_deep_extend("force", default_shift_opts, raw_opts)
   if opts.bufnr == 0 then
