@@ -123,7 +123,8 @@ function M.shift(bufnr, entry_map, start_row, end_row, offsets)
 end
 
 local decoration_ns = vim.api.nvim_create_namespace("unionbuf_decoration")
-local priority = vim.highlight.priorities.user - 1
+local hl = vim.hl or vim.highlight
+local priority = hl.priorities.user - 1
 vim.api.nvim_set_decoration_provider(decoration_ns, {})
 vim.api.nvim_set_decoration_provider(decoration_ns, {
   on_buf = function(_, bufnr)
