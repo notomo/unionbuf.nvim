@@ -27,8 +27,9 @@ function M.resolve(raw_entries)
       return
     end
 
-    local info, err = M._resolve_bufnr(bufnr)
-    if err then
+    local info = M._resolve_bufnr(bufnr)
+    if type(info) == "string" then
+      local err = info
       table.insert(errs, err)
       return
     end
@@ -36,17 +37,17 @@ function M.resolve(raw_entries)
   end)
 
   if #errs > 0 then
-    return nil, "[unionbuf] Invalid entries:\n" .. table.concat(errs, "\n")
+    return "[unionbuf] Invalid entries:\n" .. table.concat(errs, "\n")
   end
   return {
     path_to_bufnr = path_to_bufnr,
     bufnr_to_info = bufnr_to_info,
-  }, nil
+  }
 end
 
 function M._resolve_bufnr(bufnr)
   if not vim.api.nvim_buf_is_valid(bufnr) then
-    return nil, ("- Buffer=%d : the buffer is invalid"):format(bufnr)
+    return ("- Buffer=%d : the buffer is invalid"):format(bufnr)
   end
 
   if vim.bo[bufnr].buftype == "" and not vim.bo[bufnr].modified and vim.bo[bufnr].buflisted then
@@ -56,7 +57,7 @@ function M._resolve_bufnr(bufnr)
 
   return {
     max_row = vim.api.nvim_buf_line_count(bufnr) - 1,
-  }, nil
+  }
 end
 
 return M

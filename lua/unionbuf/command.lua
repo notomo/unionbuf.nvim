@@ -91,8 +91,9 @@ function M.shift(raw_offsets, raw_opts)
 end
 
 function M._read(bufnr)
-  local entries, err = require("unionbuf.core.entries").new(buffer_raw_entries[bufnr])
-  if err then
+  local entries = require("unionbuf.core.entries").new(buffer_raw_entries[bufnr])
+  if type(entries) == "string" then
+    local err = entries
     return err
   end
   buffer_entry_maps[bufnr] = require("unionbuf.core.reader").read(bufnr, entries)

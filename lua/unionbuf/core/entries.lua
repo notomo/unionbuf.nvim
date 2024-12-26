@@ -6,9 +6,10 @@ local Entry = {}
 Entry.__index = Entry
 
 function M.new(raw_entries)
-  local resolved, err = require("unionbuf.core.buffer_resolver").resolve(raw_entries)
-  if err then
-    return nil, err
+  local resolved = require("unionbuf.core.buffer_resolver").resolve(raw_entries)
+  if type(resolved) == "string" then
+    local err = resolved
+    return err
   end
 
   local entries = M._new(raw_entries, resolved)
@@ -27,7 +28,7 @@ function M.new(raw_entries)
     end)
     vim.list_extend(sorted, M._merge(buffer_entries, resolved))
   end
-  return sorted, nil
+  return sorted
 end
 
 function M._new(raw_entries, resolved)
