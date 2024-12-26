@@ -49,11 +49,9 @@ function M._resolve_bufnr(bufnr)
     return nil, ("- Buffer=%d : the buffer is invalid"):format(bufnr)
   end
 
-  if vim.bo[bufnr].buftype == "" and not vim.bo[bufnr].modified then
+  if vim.bo[bufnr].buftype == "" and not vim.bo[bufnr].modified and vim.bo[bufnr].buflisted then
     -- to sync buffer with file
-    vim.api.nvim_buf_call(bufnr, function()
-      vim.cmd.edit()
-    end)
+    vim.cmd.checktime(bufnr)
   end
 
   return {

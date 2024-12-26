@@ -235,6 +235,10 @@ test1
     vim.cmd.tabedit()
     vim.cmd.tabonly()
     vim.fn.system("echo edited > " .. path)
+    vim.wait(10, function()
+      return false
+    end)
+    vim.fn.system({ "touch", path })
 
     local entries = {
       {
