@@ -127,9 +127,6 @@ local hl = vim.hl or vim.highlight
 local priority = hl.priorities.user - 1
 vim.api.nvim_set_decoration_provider(decoration_ns, {})
 vim.api.nvim_set_decoration_provider(decoration_ns, {
-  on_buf = function(_, bufnr)
-    return vim.bo[bufnr].filetype == "unionbuf"
-  end,
   on_win = function(_, window_id, bufnr, topline, botline_guess)
     if vim.bo[bufnr].filetype ~= "unionbuf" then
       return false
