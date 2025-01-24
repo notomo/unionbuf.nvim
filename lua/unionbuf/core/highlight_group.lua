@@ -10,7 +10,7 @@ local setup_highlight_groups = function()
   }
 end
 
-local group = vim.api.nvim_create_augroup("unionbuf_highlight_group", {})
+local group = vim.api.nvim_create_augroup("unionbuf.highlight_group", {})
 vim.api.nvim_create_autocmd({ "ColorScheme" }, {
   group = group,
   pattern = { "*" },
