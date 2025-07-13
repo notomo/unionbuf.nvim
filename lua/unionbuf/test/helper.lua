@@ -39,8 +39,7 @@ asserts.create("lines_after_write"):register(function(self)
     vim.cmd.write()
     local after = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
 
-    ---@diagnostic disable-next-line: missing-fields
-    local diff = vim.diff(after, before, {})
+    local diff = vim.text.diff(after, before, {})
     self:set_positive(([[diff exists: before(+), after(-)
 %s
 Before lines:
