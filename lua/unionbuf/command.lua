@@ -19,7 +19,7 @@ function M.open(raw_entries, raw_opts)
   end
 
   vim.api.nvim_create_autocmd({ "BufReadCmd" }, {
-    buffer = bufnr,
+    buf = bufnr,
     nested = true,
     callback = function()
       local warn = M._read(bufnr)
@@ -30,7 +30,7 @@ function M.open(raw_entries, raw_opts)
   })
 
   vim.api.nvim_create_autocmd({ "BufWriteCmd" }, {
-    buffer = bufnr,
+    buf = bufnr,
     nested = true,
     callback = function()
       local entry_map = buffer_entry_maps[bufnr]
@@ -48,7 +48,7 @@ function M.open(raw_entries, raw_opts)
   })
 
   vim.api.nvim_create_autocmd({ "BufWipeout" }, {
-    buffer = bufnr,
+    buf = bufnr,
     callback = function()
       buffer_raw_entries[bufnr] = nil
       buffer_entry_maps[bufnr] = nil
