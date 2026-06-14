@@ -53,8 +53,8 @@ After lines:
   end
 end)
 
-function helper.typed_assert(assert)
-  local x = require("assertlib").typed(assert)
+function helper.typed_assert(raw_assert)
+  local x = require("assertlib").typed(raw_assert)
   ---@cast x +{lines_after_write:fun()}
   return x
 end
