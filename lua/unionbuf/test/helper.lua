@@ -1,19 +1,20 @@
-local helper = require("vusted.helper")
+local helper = require("ntf.helper")
 local plugin_name = helper.get_module_root(...)
 
 helper.root = helper.find_plugin_root(plugin_name)
 vim.opt.packpath:prepend(vim.fs.joinpath(helper.root, "spec/.shared/packages"))
-require("assertlib").register(require("vusted.assert").register)
+require("assertlib").register(require("ntf.assert").register)
 
 local notify = vim.notify
 function helper.before_each()
-  helper.test_data = require("unionbuf.vendor.misclib.test.data_dir").setup(helper.root)
+  helper.test_data = require("unionbuf.vendor.misclib.test.data_dir").setup(
+    helper.root,
+    { base_dir = ("test_data_%d/"):format(vim.fn.getpid()) }
+  )
   vim.notify = notify
 end
 
 function helper.after_each()
-  helper.cleanup()
-  helper.cleanup_loaded_modules(plugin_name)
   helper.test_data:teardown()
 end
 
@@ -31,9 +32,9 @@ function helper.undo()
   vim.cmd.undo({ mods = { silent = true } })
 end
 
-local asserts = require("vusted.assert").asserts
+local assert = require("ntf.assert")
 
-asserts.create("lines_after_write"):register(function(self)
+assert.register("lines_after_write", function(self)
   return function(_, _)
     local before = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
     vim.cmd.write()
