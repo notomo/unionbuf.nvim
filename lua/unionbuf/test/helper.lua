@@ -7,7 +7,7 @@ require("assertlib").register(require("ntf.assert").register)
 
 local notify = vim.notify
 function helper.before_each()
-  helper.test_data = require("unionbuf.vendor.misclib.test.data_dir").setup(helper.root, { base_dir = "spec/test_data/" })
+  helper.test_data = require("unionbuf.vendor.misclib.test.data_dir").setup(vim.fs.joinpath(helper.root, "spec"))
   vim.notify = notify
 end
 
